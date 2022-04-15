@@ -1,0 +1,38 @@
+body {
+  margin: 0;
+  /* background: rgb(255, 255, 255); */
+  background: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgb(236, 240, 243) 100%);
+}
+
+#gui {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  background-image: url("img/gui_bottom.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  /* background-color: red; */
+  width: 300px;
+  height: 128px;
+}
+
+#logo {
+  position: absolute;
+  top: 30px;
+  left: 40px;
+  background-image: url("img/logo.png");
+  background-repeat: no-repeat;
+  background-size: contain;
+  /* background-color: red; */
+  width: 300px;
+  height: 43px;
+}
+
+#msg {
+  position: absolute;
+  right: 30px;
+  bottom: 30px;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  text-align: right;
+  font-size: 12px;
+}
