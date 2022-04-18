@@ -48,16 +48,10 @@ class ambientParticles {
     const sprite = new THREE.TextureLoader().load("../img/pointSprite.png");
 
     for (let i = 0; i < this.particleCount; i++) {
-      // const x = this.pos.x + this.horizontalSpread * Math.random() - this.horizontalSpread / 2;
-      // const y = this.pos.y + this.verticalSpread * Math.random() - this.verticalSpread / 2;
-      // const z = this.pos.z + this.horizontalSpread * Math.random() - this.horizontalSpread / 2;
-
       const x = this.getPoint().x;
       const y = this.getPoint().y;
       const z = this.getPoint().z;
 
-      //const angle = Math.PI * 2 * Math.random();
-      //this.directions.push(Math.cos(angle), Math.sin(angle), Math.random());
       this.vertices.push(x, y, z);
     }
     particlesParticlesGeo.setAttribute("position", new THREE.Float32BufferAttribute(this.vertices, 3));

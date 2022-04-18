@@ -1,7 +1,7 @@
 body {
   margin: 0;
-  /* background: rgb(255, 255, 255); */
-  background: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgb(236, 240, 243) 100%);
+  background: rgb(255, 255, 255);
+  /* background: radial-gradient(circle, rgba(255, 255, 255, 1) 0%, rgb(236, 240, 243) 100%); */
 }
 
 #gui {

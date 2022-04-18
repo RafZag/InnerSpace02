@@ -1,8 +1,12 @@
 import * as THREE from "https://cdn.skypack.dev/three@0.132.0/build/three.module.js";
 import { OrbitControls } from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/controls/OrbitControls.js";
+import { EffectComposer } from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/postprocessing/EffectComposer.js";
+import { RenderPass } from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/postprocessing/RenderPass.js";
+import { ShaderPass } from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/postprocessing/ShaderPass.js";
 import { GUI } from "https://cdn.skypack.dev/three@0.137.0/examples/jsm/libs/lil-gui.module.min.js";
 import Stats from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/libs/stats.module.js";
 import { storyStage } from "./covidStory/storyStage.js";
+import { TiltShiftShader } from "./shaders/TiltShiftShader.js";
 
 ///////////////////////////// BROWSER CHECK
 
@@ -15,7 +19,7 @@ if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(naviga
   isMobile = false;
 }
 
-let camera, scene, renderer, stats, controls;
+let camera, scene, renderer, stats, controls, composer, effectPass;
 let currentStage;
 let nextStage;
 let animationProgress = 0;
@@ -125,10 +129,25 @@ function init() {
 
   renderer = new THREE.WebGLRenderer({ antyalias: true, alpha: true });
 
-  // renderer.setClearAlpha(0,0);
+  renderer.setPixelRatio(window.devicePixelRatio);
+  renderer.setClearColor(new THREE.Color());
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
+
+  //----------------  postprocessing --------------------------
+
+  composer = new EffectComposer(renderer);
+  composer.addPass(new RenderPass(scene, camera));
+
+  effectPass = new ShaderPass(TiltShiftShader);
+  // effectPass.uniforms["v"].value = 1 / window.innerHeight;
+  // effectPass.uniforms["r"].value = 0.5;
+
+  effectPass.uniforms["resolution"].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
+  effectPass.uniforms["resolution"].value.multiplyScalar(window.devicePixelRatio);
+
+  composer.addPass(effectPass);
 
   //---------------- Controls --------------------------
 
@@ -251,6 +270,8 @@ function animate(time) {
   if (freeCam) controls.update();
   stats.update();
   TWEEN.update(time);
+
+  composer.render();
 }
 
 //---------------- Render --------------------------
@@ -331,9 +352,12 @@ function onDocumentWheel(event) {
 }
 
 function onWindowResize() {
+  composer.setSize(window.innerWidth, window.innerHeight);
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+
+  effectPass.uniforms["resolution"].value.set(window.innerWidth, window.innerHeight).multiplyScalar(window.devicePixelRatio);
 }
 
 // ----------------------------------------------
