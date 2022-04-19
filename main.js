@@ -7,6 +7,7 @@ import { GUI } from "https://cdn.skypack.dev/three@0.137.0/examples/jsm/libs/lil
 import Stats from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/libs/stats.module.js";
 import { storyStage } from "./covidStory/storyStage.js";
 import { TiltShiftShader } from "./shaders/TiltShiftShader.js";
+import { VignetteShader } from "./shaders/VignetteShader.js";
 
 ///////////////////////////// BROWSER CHECK
 
@@ -19,7 +20,7 @@ if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(naviga
   isMobile = false;
 }
 
-let camera, scene, renderer, stats, controls, composer, effectPass;
+let camera, scene, renderer, stats, controls, composer, effectPass, vignettePass;
 let currentStage;
 let nextStage;
 let animationProgress = 0;
@@ -39,6 +40,7 @@ let camTargetRotY = 0;
 let msgDiv = document.getElementById("msg");
 
 let camPosition = new THREE.Vector3(0, 0, 60);
+let vignetteColor = new THREE.Color(0x4fcfae);
 
 const tween = eval("TWEEN.Easing.Quadratic.InOut");
 
@@ -53,6 +55,10 @@ const params = {
   countMult: 65,
   backgroundColor: 0xdfe9f2,
   darkBackground: 0x000000,
+  bluramount: 0.6,
+  center: 1.0,
+  vignetteOffset: 1.0,
+  vignetteDarkness: 0.25,
   changeBG: function () {
     darkMode = !darkMode;
     if (darkMode) {
@@ -64,7 +70,7 @@ const params = {
       for (let i = 0; i < currentStage.sceneObjects.length; i++) {
         currentStage.sceneObjects[i].changeRimColor(new THREE.Color(0xffffff));
       }
-      renderer.setClearColor(0, 0);
+      renderer.setClearColor(new THREE.Color());
     }
   },
   animate: function () {
@@ -141,13 +147,15 @@ function init() {
   composer.addPass(new RenderPass(scene, camera));
 
   effectPass = new ShaderPass(TiltShiftShader);
-  // effectPass.uniforms["v"].value = 1 / window.innerHeight;
-  // effectPass.uniforms["r"].value = 0.5;
+  effectPass.uniforms["bluramount"].value = params.bluramount;
+  effectPass.uniforms["center"].value = params.center;
+  // effectPass.uniforms["resolution"].value.multiplyScalar(window.devicePixelRatio);
 
-  effectPass.uniforms["resolution"].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
-  effectPass.uniforms["resolution"].value.multiplyScalar(window.devicePixelRatio);
+  vignettePass = new ShaderPass(VignetteShader);
+  vignettePass.uniforms["color"].value = [vignetteColor.r, vignetteColor.g, vignetteColor.b];
 
   composer.addPass(effectPass);
+  composer.addPass(vignettePass);
 
   //---------------- Controls --------------------------
 
@@ -182,8 +190,23 @@ function init() {
   const gui = new GUI();
   gui.add(params, "camControl");
   gui.add(params, "changeBG");
-  // gui.add(params, "animate");
-  gui.close();
+  const tiltFolder = gui.addFolder("TiltShift");
+  tiltFolder.add(params, "bluramount", 0, 5.0, 0.01).onChange(() => {
+    effectPass.uniforms["bluramount"].value = params.bluramount;
+  });
+  tiltFolder.add(params, "center", 0.1, 2, 0.01).onChange(() => {
+    effectPass.uniforms["center"].value = params.center;
+  });
+  const vignFolder = gui.addFolder("Vignette");
+  vignFolder.add(params, "vignetteOffset", 0, 2.0, 0.01).onChange(() => {
+    vignettePass.uniforms["offset"].value = params.vignetteOffset;
+  });
+  vignFolder.add(params, "vignetteDarkness", 0, 1, 0.01).onChange(() => {
+    vignettePass.uniforms["darkness"].value = params.vignetteDarkness;
+  });
+
+  // vignetteDarkness: 1.0,
+  // gui.close();
 
   ///////////////////// Build scene, add objects
 
@@ -192,6 +215,12 @@ function init() {
 
   currentStage = stage01;
   nextStage = stage02;
+
+  effectPass.uniforms["bluramount"].value = currentStage.blurAmount;
+  params.bluramount = currentStage.blurAmount;
+  effectPass.uniforms["center"].value = currentStage.blurCenter;
+  vignettePass.uniforms["offset"].value = params.vignetteOffset;
+  vignettePass.uniforms["darkness"].value = params.vignetteDarkness;
 }
 
 //---------------- Animate --------------------------
@@ -356,8 +385,6 @@ function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
-
-  effectPass.uniforms["resolution"].value.set(window.innerWidth, window.innerHeight).multiplyScalar(window.devicePixelRatio);
 }
 
 // ----------------------------------------------

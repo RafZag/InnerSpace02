@@ -1,5 +1,7 @@
 {
   "name": "Injection",
+  "blurAmount": 0.2,
+  "blurCenter": 1.0,
   "camera": {
     "start": [0, 0, 60],
     "end": [0, 0, 0]

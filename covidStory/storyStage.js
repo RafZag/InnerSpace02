@@ -11,6 +11,9 @@ class storyStage {
   startRotation = new THREE.Vector3();
   targetRotation = new THREE.Vector3();
   camera;
+  blurAmount = 0.2;
+  blurCenter = 1.0;
+
   // moveForwardThreshold = 350;
   // moveBackThreshold = -250;
   // transitionSpeed = 6;

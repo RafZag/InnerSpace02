@@ -45,7 +45,7 @@ class ambientParticles {
 
   buildParticles() {
     let particlesParticlesGeo = new THREE.BufferGeometry();
-    const sprite = new THREE.TextureLoader().load("../img/pointSprite.png");
+    const sprite = new THREE.TextureLoader().load("./img/pointSprite.png");
 
     for (let i = 0; i < this.particleCount; i++) {
       const x = this.getPoint().x;

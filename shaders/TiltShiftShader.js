@@ -1,7 +1,10 @@
 const TiltShiftShader = {
   uniforms: {
     tDiffuse: { value: null },
-    resolution: { value: null },
+    bluramount: { value: 0.2 },
+    center: { value: 1.0 },
+    stepSize: { value: 0.004 },
+    steps: { value: 10.0 },
   },
 
   vertexShader: /* glsl */ `
@@ -19,18 +22,17 @@ const TiltShiftShader = {
 
 		uniform sampler2D tDiffuse;
 		uniform vec2 resolution;
+        uniform float bluramount;
+        uniform float center;
+        uniform float stepSize;
+        uniform float steps;
 
 		varying highp vec2 vUv;
-
-        const float bluramount  = 0.2;
-        const float center      = 1.0;
-        const float stepSize    = 0.004;
-        const float steps       = 10.0;
-
-        const float minOffs = (float(steps-1.0)) / -2.0;
-        const float maxOffs = (float(steps-1.0)) / +2.0;
        
 		void main(){
+
+            float minOffs = (float(steps-1.0)) / -2.0;
+            float maxOffs = (float(steps-1.0)) / +2.0;
             
             vec2 tcoord = vUv.xy ;
             
