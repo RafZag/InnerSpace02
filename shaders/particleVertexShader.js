@@ -154,8 +154,8 @@ float cnoise(vec3 P)
 	  float displacementY = w * surfaceNoise;	
     vec4 n = modelViewMatrix * vec4( normal, 1.0 );        
 
-    //float p = mvPosition.z / 100.;
-    //gl_PointSize = size * (p * p + 1.);
+    // float p = -mvPosition.z;
+    // gl_PointSize = size + p;
 
     mvPosition.x += (noise(time + 1., fract(float(gl_VertexID) * 0.0001)) - 0.5) * wobble;
     mvPosition.y += (noise(time + 1.2, fract(float(gl_VertexID) * 0.001)) - 0.5) * wobble;

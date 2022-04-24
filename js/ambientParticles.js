@@ -16,9 +16,6 @@ class ambientParticles {
 
   particles; // THREE.Points(); - main object added to scene
   vertices = []; // particles verts
-  partColors = [];
-  sizes = [];
-  directions = [];
   color = new THREE.Color(0x4fcfae);
 
   constructor(cont) {
@@ -55,7 +52,6 @@ class ambientParticles {
       this.vertices.push(x, y, z);
     }
     particlesParticlesGeo.setAttribute("position", new THREE.Float32BufferAttribute(this.vertices, 3));
-    particlesParticlesGeo.setAttribute("direction", new THREE.Float32BufferAttribute(this.directions, 3));
 
     let mat = new THREE.PointsMaterial({
       size: 1,
@@ -68,36 +64,6 @@ class ambientParticles {
     mat.color.set(this.color);
     this.particles = new THREE.Points(particlesParticlesGeo, mat);
     this.parentContainer.add(this.particles);
-  }
-
-  stop() {
-    if (this.flying) {
-      this.speed *= 0.89;
-      this.fly();
-    }
-    if (Math.abs(this.speed) < 0.1 && this.flying) {
-      this.flying = false;
-      // console.log("stop!");
-    }
-  }
-
-  fly() {
-    if (!this.flying) this.flying = true;
-    let positions = this.particles.geometry.attributes.position.array;
-    for (let i = 0; i < positions.length; i++) {
-      positions[i * 3 + 2] += this.speed;
-      if (positions[i * 3 + 2] > this.backBirthDistane) {
-        positions[i * 3] = this.pos.x + this.horizontalSpread * Math.random() - this.horizontalSpread / 2;
-        positions[i * 3 + 1] = this.pos.y + this.verticalSpread * Math.random() - this.verticalSpread / 2;
-        positions[i * 3 + 2] = this.frontBirthDistane;
-      }
-      if (positions[i * 3 + 2] < this.frontBirthDistane) {
-        positions[i * 3] = this.pos.x + this.horizontalSpread * Math.random() - this.horizontalSpread / 2;
-        positions[i * 3 + 1] = this.pos.y + this.verticalSpread * Math.random() - this.verticalSpread / 2;
-        positions[i * 3 + 2] = this.backBirthDistane;
-      }
-    }
-    this.particles.geometry.attributes.position.needsUpdate = true;
   }
 
   spin() {

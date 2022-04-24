@@ -8,6 +8,7 @@ import Stats from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/libs/stats
 import { storyStage } from "./covidStory/storyStage.js";
 import { TiltShiftShader } from "./shaders/TiltShiftShader.js";
 import { VignetteShader } from "./shaders/VignetteShader.js";
+import { transitionParticles } from "./js/transitionParticles.js";
 
 ///////////////////////////// BROWSER CHECK
 
@@ -24,14 +25,12 @@ let camera, scene, renderer, stats, controls, composer, effectPass, vignettePass
 let currentStage;
 let nextStage;
 let animationProgress = 0;
+let transParticles;
 
 let plusZ = 0;
-let scrollMoveDistance = 0;
-let transitionAnim = false;
-let flyDistance = 0;
-
 let darkMode = false;
 let freeCam = false;
+let transition = false;
 
 let mouse = new THREE.Vector3(0, 0, 0.5);
 let camTargetRotX = 0;
@@ -40,7 +39,7 @@ let camTargetRotY = 0;
 let msgDiv = document.getElementById("msg");
 
 let camPosition = new THREE.Vector3(0, 0, 60);
-let vignetteColor = new THREE.Color(0x4fcfae);
+let vignetteColor = new THREE.Color(0xcad3da);
 
 const tween = eval("TWEEN.Easing.Quadratic.InOut");
 
@@ -57,38 +56,37 @@ const params = {
   darkBackground: 0x000000,
   bluramount: 0.6,
   center: 1.0,
-  vignetteOffset: 1.0,
-  vignetteDarkness: 0.25,
+  vignetteOffset: 1.3,
+  vignetteDarkness: 0.85,
   changeBG: function () {
-    darkMode = !darkMode;
-    if (darkMode) {
-      for (let i = 0; i < currentStage.sceneObjects.length; i++) {
-        currentStage.sceneObjects[i].changeRimColor(new THREE.Color(params.darkBackground));
-      }
-      renderer.setClearColor(params.darkBackground);
-    } else {
-      for (let i = 0; i < currentStage.sceneObjects.length; i++) {
-        currentStage.sceneObjects[i].changeRimColor(new THREE.Color(0xffffff));
-      }
-      renderer.setClearColor(new THREE.Color());
-    }
+    changeBG();
   },
   animate: function () {
     startAnim();
   },
   animTween: 0,
+  transTween: 0,
 };
 
 function startAnim(e) {
   if (e.key == " ") {
-    // // freeCam = false;
-    // if (params.animTween == 1) {
-    //   animateTween.to({ animTween: 0 }, 3000).start();
-    // }
-    // if (params.animTween == 0) {
     if (!currentStage.complete) animateTween.to({ animTween: 1 }, 3000).start();
-    else switchScene();
-    // }
+    else sceneTransition();
+  }
+}
+
+function changeBG() {
+  darkMode = !darkMode;
+  if (darkMode) {
+    for (let i = 0; i < currentStage.sceneObjects.length; i++) {
+      currentStage.sceneObjects[i].changeRimColor(new THREE.Color(params.darkBackground));
+    }
+    renderer.setClearColor(params.darkBackground);
+  } else {
+    for (let i = 0; i < currentStage.sceneObjects.length; i++) {
+      currentStage.sceneObjects[i].changeRimColor(new THREE.Color(0xffffff));
+    }
+    renderer.setClearColor(new THREE.Color());
   }
 }
 
@@ -119,23 +117,12 @@ function init() {
   let c = new THREE.Vector3();
   camera.position.copy(camPosition);
 
-  //---------------- Lights --------------------------
-
-  const light1 = new THREE.DirectionalLight(0xffffff, 0.5);
-  light1.position.set(0, 100, 250);
-  scene.add(light1);
-
-  const light2 = new THREE.DirectionalLight(0xffffff, 0.5);
-  light2.position.set(0, -100, -250);
-  scene.add(light2);
-
-  scene.add(new THREE.AmbientLight(0x999999));
-
   //---------------- Render --------------------------
 
   renderer = new THREE.WebGLRenderer({ antyalias: true, alpha: true });
 
   renderer.setPixelRatio(window.devicePixelRatio);
+
   renderer.setClearColor(new THREE.Color());
   renderer.setPixelRatio(window.devicePixelRatio);
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -149,7 +136,6 @@ function init() {
   effectPass = new ShaderPass(TiltShiftShader);
   effectPass.uniforms["bluramount"].value = params.bluramount;
   effectPass.uniforms["center"].value = params.center;
-  // effectPass.uniforms["resolution"].value.multiplyScalar(window.devicePixelRatio);
 
   vignettePass = new ShaderPass(VignetteShader);
   vignettePass.uniforms["color"].value = [vignetteColor.r, vignetteColor.g, vignetteColor.b];
@@ -163,16 +149,6 @@ function init() {
   controls.enabled = freeCam;
   // controls.target = new THREE.Vector3(0, 18, 0);
   controls.enableDamping = true;
-  // controls.addEventListener("change", () => {
-  //   for (let i = 0; i < sceneObjects.length; i++) {
-  //     const pos = sceneObjects[i].position;
-  //     let d = pos.distanceTo(camera.position);
-  //     sceneObjects[i].zoomResample(d);
-  //   }
-  // });
-
-  // controls.autoRotate = true;
-  // controls.autoRotateSpeed = 0.5;
 
   //---------------------- Listeners -----------------
 
@@ -205,10 +181,12 @@ function init() {
     vignettePass.uniforms["darkness"].value = params.vignetteDarkness;
   });
 
-  // vignetteDarkness: 1.0,
   // gui.close();
 
   ///////////////////// Build scene, add objects
+
+  transParticles = new transitionParticles(scene);
+  transParticles.hide();
 
   const stage01 = new storyStage(scene, camera, "covidStory/data/stage01.json");
   const stage02 = new storyStage(scene, camera, "covidStory/data/stage02.json");
@@ -221,18 +199,19 @@ function init() {
   effectPass.uniforms["center"].value = currentStage.blurCenter;
   vignettePass.uniforms["offset"].value = params.vignetteOffset;
   vignettePass.uniforms["darkness"].value = params.vignetteDarkness;
+
+  msgDiv.innerHTML = "window.devicePixelRatio: " + window.devicePixelRatio;
 }
 
 //---------------- Animate --------------------------
 
 function animate(time) {
-  msgDiv.innerHTML = "animation progress: " + animationProgress.toFixed(2);
+  if (transition) transParticles.fly();
+  else transParticles.stop();
+
   if (currentStage.ready && !currentStage.visible) currentStage.show();
   if (!freeCam) {
     plusZ += (0 - plusZ) * 0.05;
-
-    // let animx = animationProgress;
-    // animationProgress += plusZ * (-(animx * animx) * 0.8 + 1);
 
     if (animationProgress >= 1) {
       plusZ = 0;
@@ -247,52 +226,7 @@ function animate(time) {
     camera.rotation.x += (camTargetRotX - camera.rotation.x) * 0.03;
     camera.rotation.y += (camTargetRotY - camera.rotation.y) * 0.03;
   }
-  if (currentStage.ready) currentStage.update(animationProgress);
-
-  // plusZ += (0 - plusZ) * 0.05;
-  // if (!ambParticles.flying) {
-  //   ambParticles.speed = plusZ;
-  //   ambParticles.fly();
-  // }
-  // // scene object scroll move
-  // for (let i = 0; i < storyStd.sceneObjects.length; i++) {
-  //   if (!transitionAnim) {
-  //     storyStd.sceneObjects[i].particles.position.z += ambParticles.speed;
-  //     // ambParticles.particles.position.z += plusZ;
-  //     scrollMoveDistance += plusZ;
-  //   }
-  // }
-  // // ambient particles fly
-  // if (scrollMoveDistance > storyStd.moveForwardThreshold) {
-  //   transitionAnim = true;
-  //   ambParticles.speed = storyStd.transitionSpeed;
-  // } else if (scrollMoveDistance <= storyStd.moveBackThreshold) {
-  //   transitionAnim = true;
-  //   ambParticles.speed = -storyStd.transitionSpeed;
-  // }
-  // if (transitionAnim) {
-  //   for (let i = 0; i < storyStd.sceneObjects.length; i++) {
-  //     storyStd.sceneObjects[i].particles.position.z += ambParticles.speed;
-  //     if (storyStd.sceneObjects[i].particles.position.z >= storyStd.flyRange)
-  //       storyStd.sceneObjects[i].particles.position.z = -storyStd.flyRange;
-  //     if (storyStd.sceneObjects[i].particles.position.z < -storyStd.flyRange)
-  //       storyStd.sceneObjects[i].particles.position.z = storyStd.flyRange;
-  //   }
-  // }
-  // if (transitionAnim) {
-  //   ambParticles.particles.geometry.setDrawRange(0, 5000);
-  //   ambParticles.fly();
-  //   flyDistance += ambParticles.speed;
-  // } else {
-  //   ambParticles.particles.geometry.setDrawRange(0, 2000);
-  //   ambParticles.stop();
-  // }
-  // if (Math.abs(flyDistance) >= 2 * storyStd.flyRange) {
-  //   scrollMoveDistance = 0;
-  //   flyDistance = 0;
-  //   transitionAnim = false;
-  //   // console.log(storyStd.sceneObjects[0].particles.position.z, storyStd.sceneObjects[0].position.z);
-  // }
+  if (currentStage.ready && !transition) currentStage.update(animationProgress);
 
   requestAnimationFrame(animate);
   render();
@@ -306,24 +240,63 @@ function animate(time) {
 //---------------- Render --------------------------
 
 function render() {
-  // ambParticles.rotation.y += 0.0002;
-  // ambParticles.rotation.x += 0.0002;
-
   renderer.render(scene, camera);
 }
 
 // ----------------------------------------------------------------
 
 function switchScene() {
+  params.transTween = 0;
+  animationProgress = 0;
+  currentStage.hide();
   let tmp = currentStage;
   currentStage = nextStage;
   nextStage = tmp;
   nextStage.hide();
   currentStage.reset();
+  currentStage.update(animationProgress);
   currentStage.show();
+}
 
+// ----------------------------------------------------------------
+
+function sceneTransition() {
   params.animTween = 0;
-  animationProgress = 0;
+  params.transTween = 0;
+
+  transition = true;
+
+  // let myTimeout = setTimeout(() => {
+  //   transition = false;
+  //   switchScene();
+  //   clearTimeout(myTimeout);
+  // }, 2000);
+
+  let transInTween = new TWEEN.Tween(params)
+    .to({ transTween: 1 }, 400)
+    .easing(TWEEN.Easing.Quadratic.Out)
+    .onComplete(() => {
+      transition = false;
+      TWEEN.remove(transInTween);
+    })
+    .onUpdate(() => {
+      currentStage.update(animationProgress);
+      currentStage.stageContainer.position.z = currentStage.startPosition.z - 1000 + params.transTween * 1000;
+    });
+
+  let transOutTween = new TWEEN.Tween(params)
+    .to({ transTween: 1 }, 1000)
+    .easing(TWEEN.Easing.Quadratic.In)
+    .onComplete(() => {
+      switchScene();
+      currentStage.stageContainer.position.z = currentStage.startPosition.z - 1000;
+      transInTween.start();
+      TWEEN.remove(transOutTween);
+    })
+    .onUpdate(() => {
+      currentStage.stageContainer.position.z = currentStage.targetPosition.z + params.transTween * 1000;
+    })
+    .start();
 }
 
 // ----------------------Event handlers----------------------------

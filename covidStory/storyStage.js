@@ -118,13 +118,15 @@ class storyStage {
   }
 
   reset() {
+    this.stageContainer.position.set(this.startPosition.x, this.startPosition.y, this.startPosition.z);
+    this.stageContainer.rotation.set(this.startRotation.x, this.startRotation.y, this.startRotation.z);
+
     for (let i = 0; i < this.sceneObjects.length; i++) {
       this.sceneObjects[i].setPosition(this.sceneObjects[i].startPosition);
       this.sceneObjects[i].setRotation(this.sceneObjects[i].startRotation);
       this.sceneObjects[i].setScale(this.sceneObjects[i].startScale);
     }
     this.complete = false;
-    console.log("scene reset");
   }
 
   update(animProgress) {
