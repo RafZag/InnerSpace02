@@ -88,6 +88,7 @@ class particleObject {
       wobble: { value: this.particleParams.particlesWobble },
       surfaceNoise: { value: this.particleParams.surfaceNoise },
       noiseScale: { value: this.particleParams.noiseScale },
+      resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
     };
 
     const shaderMaterial = new THREE.ShaderMaterial({
@@ -262,15 +263,16 @@ class particleObject {
 
     let posVec = new THREE.Vector3();
     posVec.lerpVectors(this.startPosition, this.targetPosition, p);
-    if (p < 1) this.setPosition(posVec);
+    if (p <= 1) this.setPosition(posVec);
     // if (p == 1) this.setPosition(this.targetPosition);
 
     let rotVec = new THREE.Vector3();
     rotVec.lerpVectors(this.startRotation, this.targetRotation, p);
-    if (p < 1) this.setRotation(rotVec);
+    if (p <= 1) this.setRotation(rotVec);
 
     this.uniformsValues["time"].value = performance.now() * this.particleParams.wobbleSpeed;
     this.uniformsValues["wobble"].value = this.particleParams.particlesWobble;
+    this.uniformsValues["resolution"].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
     this.uniformsValues.needsUpdate = true;
   }
 }

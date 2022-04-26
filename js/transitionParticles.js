@@ -65,7 +65,7 @@ class transitionParticles {
 
   stop() {
     if (this.flying) {
-      this.mat.size *= 0.91;
+      this.mat.size *= 0.82;
       this.currentSpeed *= 0.89;
       this.fly();
     }

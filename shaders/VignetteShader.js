@@ -32,13 +32,18 @@ const VignetteShader = {
 
 		varying vec2 vUv;
 
+		vec3 blendMultiply(vec3 base, vec3 blend, float opacity) {
+ 		   return (base * blend * opacity + base * (1.0 - opacity));
+		}
+
 		void main() {
 
-			// Eskil's vignette
+			// Eskil's vignette			
 
 			vec4 texel = texture2D( tDiffuse, vUv );
 			vec2 uv = ( vUv - vec2( 0.5 ) ) * vec2( offset );
-			gl_FragColor = vec4( mix( texel.rgb, color, dot( uv, uv )*darkness ), texel.a );
+			// gl_FragColor = vec4( mix( texel.rgb, color, dot( uv, uv )*darkness ), texel.a );
+			gl_FragColor = vec4( blendMultiply( texel.rgb, color, dot( uv, uv )*darkness ), texel.a );
 			
 
 		}`,

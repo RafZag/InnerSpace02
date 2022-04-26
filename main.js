@@ -1,5 +1,5 @@
 import * as THREE from "https://cdn.skypack.dev/three@0.132.0/build/three.module.js";
-import { OrbitControls } from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/controls/OrbitControls.js";
+// import { OrbitControls } from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/controls/OrbitControls.js";
 import { EffectComposer } from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/postprocessing/EffectComposer.js";
 import { RenderPass } from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/postprocessing/RenderPass.js";
 import { ShaderPass } from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/postprocessing/ShaderPass.js";
@@ -21,22 +21,27 @@ if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(naviga
   isMobile = false;
 }
 
-let camera, scene, renderer, stats, controls, composer, effectPass, vignettePass;
+let camera, scene, renderer, stats, composer, effectPass, vignettePass;
+// let controls;
 let currentStage;
 let nextStage;
 let animationProgress = 0;
 let transParticles;
 
-let plusZ = 0;
 let darkMode = false;
-let freeCam = false;
+let editMode = false;
+let editFrame = 0;
 let transition = false;
+let rightButtonDown = false;
+let leftButtonDown = false;
 
 let mouse = new THREE.Vector3(0, 0, 0.5);
 let camTargetRotX = 0;
 let camTargetRotY = 0;
 
 let msgDiv = document.getElementById("msg");
+let editDiv = document.getElementById("edit");
+let frameDiv = document.getElementById("frame");
 
 let camPosition = new THREE.Vector3(0, 0, 60);
 let vignetteColor = new THREE.Color(0xcad3da);
@@ -44,10 +49,20 @@ let vignetteColor = new THREE.Color(0xcad3da);
 const tween = eval("TWEEN.Easing.Quadratic.InOut");
 
 const params = {
-  camControl: function () {
-    freeCam = !freeCam;
-    controls.enabled = freeCam;
-    if (!freeCam) camera.position.copy(camPosition);
+  editMode: function () {
+    editMode = !editMode;
+    // controls.enabled = editMode;
+    if (!editMode) camera.position.copy(camPosition);
+    if (editMode) {
+      editDiv.style.visibility = "visible";
+      frameDiv.style.visibility = "visible";
+      frameDiv.innerHTML = "start frame";
+      editFrame = 0;
+      currentStage.update(editFrame);
+    } else {
+      editDiv.style.visibility = "hidden";
+      frameDiv.style.visibility = "hidden";
+    }
   },
   camRot: 0.1,
   sizeMult: 0.44,
@@ -69,10 +84,8 @@ const params = {
 };
 
 function startAnim(e) {
-  if (e.key == " ") {
-    if (!currentStage.complete) animateTween.to({ animTween: 1 }, 3000).start();
-    else sceneTransition();
-  }
+  if (!currentStage.complete) animateTween.to({ animTween: 1 }, 3000).start();
+  else sceneTransition();
 }
 
 function changeBG() {
@@ -94,7 +107,7 @@ let animateTween = new TWEEN.Tween(params)
   .to({ animTween: 1 })
   .easing(tween)
   .onComplete(() => {
-    // freeCam = true;
+    // editMode = true;
     currentStage.complete = true;
   })
   .onUpdate(() => {
@@ -145,10 +158,10 @@ function init() {
 
   //---------------- Controls --------------------------
 
-  controls = new OrbitControls(camera, renderer.domElement);
-  controls.enabled = freeCam;
-  // controls.target = new THREE.Vector3(0, 18, 0);
-  controls.enableDamping = true;
+  // controls = new OrbitControls(camera, renderer.domElement);
+  // controls.enabled = editMode;
+  // // controls.target = new THREE.Vector3(0, 18, 0);
+  // controls.enableDamping = true;
 
   //---------------------- Listeners -----------------
 
@@ -156,7 +169,14 @@ function init() {
   document.addEventListener("mousemove", onDocumentMouseMove, false);
   document.addEventListener("wheel", onDocumentWheel, false);
   document.addEventListener("click", onDocumentClick, false);
-  document.addEventListener("keydown", startAnim);
+  document.addEventListener("keydown", onDocumentKeyDown);
+  document.addEventListener("mousedown", onDocumentMouseDown);
+  document.addEventListener("mouseup", onDocumentMouseUp);
+
+  document.addEventListener("contextmenu", (e) => {
+    e.preventDefault();
+    return false;
+  });
 
   //---------------- GUI --------------------------
 
@@ -164,8 +184,7 @@ function init() {
   document.body.appendChild(stats.dom);
 
   const gui = new GUI();
-  gui.add(params, "camControl");
-  gui.add(params, "changeBG");
+  gui.add(params, "editMode");
   const tiltFolder = gui.addFolder("TiltShift");
   tiltFolder.add(params, "bluramount", 0, 5.0, 0.01).onChange(() => {
     effectPass.uniforms["bluramount"].value = params.bluramount;
@@ -181,7 +200,8 @@ function init() {
     vignettePass.uniforms["darkness"].value = params.vignetteDarkness;
   });
 
-  // gui.close();
+  gui.add(params, "changeBG");
+  gui.close();
 
   ///////////////////// Build scene, add objects
 
@@ -199,8 +219,6 @@ function init() {
   effectPass.uniforms["center"].value = currentStage.blurCenter;
   vignettePass.uniforms["offset"].value = params.vignetteOffset;
   vignettePass.uniforms["darkness"].value = params.vignetteDarkness;
-
-  msgDiv.innerHTML = "window.devicePixelRatio: " + window.devicePixelRatio;
 }
 
 //---------------- Animate --------------------------
@@ -210,27 +228,18 @@ function animate(time) {
   else transParticles.stop();
 
   if (currentStage.ready && !currentStage.visible) currentStage.show();
-  if (!freeCam) {
-    plusZ += (0 - plusZ) * 0.05;
-
-    if (animationProgress >= 1) {
-      plusZ = 0;
-      animationProgress = 1;
-    }
-
-    if (animationProgress < 0) {
-      plusZ = 0;
-      animationProgress = 0;
-    }
-
+  if (!editMode) {
     camera.rotation.x += (camTargetRotX - camera.rotation.x) * 0.03;
     camera.rotation.y += (camTargetRotY - camera.rotation.y) * 0.03;
+    if (currentStage.ready && !transition) currentStage.update(animationProgress);
   }
-  if (currentStage.ready && !transition) currentStage.update(animationProgress);
+
+  if (editMode) displaySceneCoords();
+  else msgDiv.innerHTML = "";
 
   requestAnimationFrame(animate);
   render();
-  if (freeCam) controls.update();
+  // if (editMode) controls.update();
   stats.update();
   TWEEN.update(time);
 
@@ -241,6 +250,29 @@ function animate(time) {
 
 function render() {
   renderer.render(scene, camera);
+}
+
+// ----------------------------------------------------------------
+
+function displaySceneCoords() {
+  let position =
+    "( " +
+    currentStage.stageContainer.position.x.toFixed(2) +
+    ", " +
+    currentStage.stageContainer.position.y.toFixed(2) +
+    ", " +
+    currentStage.stageContainer.position.z.toFixed(2) +
+    ")";
+
+  let rotation =
+    "( " +
+    currentStage.stageContainer.rotation.x.toFixed(2) +
+    ", " +
+    currentStage.stageContainer.rotation.y.toFixed(2) +
+    ", " +
+    currentStage.stageContainer.rotation.z.toFixed(2) +
+    ")";
+  msgDiv.innerHTML = "Position: " + position + " | Rotation: " + rotation;
 }
 
 // ----------------------------------------------------------------
@@ -308,6 +340,16 @@ function onDocumentMouseMove(event) {
   camTargetRotX = mouse.y * params.camRot;
   camTargetRotY = -mouse.x * params.camRot;
 
+  if (editMode && rightButtonDown) {
+    currentStage.stageContainer.position.x += event.movementX / 100;
+    currentStage.stageContainer.position.y -= event.movementY / 100;
+  }
+
+  if (editMode && leftButtonDown) {
+    currentStage.stageContainer.rotation.x += event.movementY / 100;
+    currentStage.stageContainer.rotation.y += event.movementX / 100;
+  }
+
   // mouse.unproject(camera);
   // raycaster = new THREE.Raycaster(camera.position, mouse.sub(camera.position).normalize());
   // const intersects = raycaster.intersectObjects(storyStd.stageCointainer.children);
@@ -328,6 +370,7 @@ function onDocumentMouseMove(event) {
 }
 
 function onDocumentClick(event) {
+  // console.log("click!");
   // mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
   // mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
   // mouse.unproject(camera);
@@ -345,12 +388,19 @@ function onDocumentClick(event) {
 }
 
 function onDocumentWheel(event) {
-  // for (let i = 0; i < storyStd.sceneObjects.length; i++) {
-  //   storyStd.sceneObjects[i].zoomResample(camera);
-  // }
+  currentStage.stageContainer.position.z += event.deltaY / 100;
+}
 
-  if (!freeCam) plusZ += event.deltaY / 20000;
-  // console.log(plusZ);
+function onDocumentMouseDown(event) {
+  if (event.button == 2) rightButtonDown = true;
+  if (event.button == 0) leftButtonDown = true;
+  event.preventDefault();
+}
+
+function onDocumentMouseUp(event) {
+  if (event.button == 2) rightButtonDown = false;
+  if (event.button == 0) leftButtonDown = false;
+  event.preventDefault();
 }
 
 function onWindowResize() {
@@ -358,6 +408,22 @@ function onWindowResize() {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+}
+
+function onDocumentKeyDown(e) {
+  if (e.key == " ") {
+    startAnim();
+  }
+  if (e.key == "ArrowUp") {
+    frameDiv.innerHTML = "end frame";
+    editFrame = 1;
+    if (editMode) currentStage.update(editFrame);
+  }
+  if (e.key == "ArrowDown") {
+    frameDiv.innerHTML = "start frame";
+    editFrame = 0;
+    if (editMode) currentStage.update(editFrame);
+  }
 }
 
 // ----------------------------------------------

@@ -20,8 +20,7 @@ const TiltShiftShader = {
 
   fragmentShader: /* glsl */ `
 
-		uniform sampler2D tDiffuse;
-		uniform vec2 resolution;
+		uniform sampler2D tDiffuse;		
         uniform float bluramount;
         uniform float center;
         uniform float stepSize;
