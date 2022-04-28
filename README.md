@@ -53,7 +53,7 @@ Images and sprites for projects. Currently only pointSprite.png used for ambient
 
 ## ./shaders
 
-GLSL shaders for particle rensering and for postprocessing effects (tiltshift and vignette).
+GLSL shaders for particle rendering and for postprocessing effects (tiltshift and vignette).
 
 ## ./covidStory
 
