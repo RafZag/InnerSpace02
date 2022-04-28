@@ -331,6 +331,22 @@ function sceneTransition() {
     .start();
 }
 
+function saveFrame(frm) {
+  if (editMode && editFrame == 0) {
+    currentStage.startPosition = currentStage.stageContainer.position;
+    currentStage.startRotation = currentStage.stageContainer.rotation;
+    currentStage.update(editFrame);
+    alert("start frame saved!");
+  }
+
+  if (editMode && editFrame == 1) {
+    currentStage.targetPosition = currentStage.stageContainer.position;
+    currentStage.targetRotation = currentStage.stageContainer.rotation;
+    currentStage.update(editFrame);
+    alert("end frame saved!");
+  }
+}
+
 // ----------------------Event handlers----------------------------
 
 function onDocumentMouseMove(event) {
@@ -411,18 +427,23 @@ function onWindowResize() {
 }
 
 function onDocumentKeyDown(e) {
-  if (e.key == " ") {
-    startAnim();
-  }
-  if (e.key == "ArrowUp") {
-    frameDiv.innerHTML = "end frame";
-    editFrame = 1;
-    if (editMode) currentStage.update(editFrame);
-  }
-  if (e.key == "ArrowDown") {
-    frameDiv.innerHTML = "start frame";
-    editFrame = 0;
-    if (editMode) currentStage.update(editFrame);
+  switch (e.key) {
+    case " ":
+      if (!editMode) startAnim();
+      break;
+    case "ArrowUp":
+      frameDiv.innerHTML = "end frame";
+      editFrame = 1;
+      if (editMode) currentStage.update(editFrame);
+      break;
+    case "ArrowDown":
+      frameDiv.innerHTML = "start frame";
+      editFrame = 0;
+      if (editMode) currentStage.update(editFrame);
+      break;
+    case "Enter":
+      saveFrame(editFrame);
+      break;
   }
 }
 
