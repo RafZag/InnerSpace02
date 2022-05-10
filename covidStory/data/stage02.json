@@ -7,10 +7,10 @@
     "end": [2, -3, 15]
   },
   "stageContainer": {
-    "startPosition": [0, -20, 0],
-    "targetPosition": [0, 20, 10],
-    "startRotation": [-0.785, 0, 0],
-    "targetRotation": [0, 0, 0]
+    "startPosition": [3.29, -9.32, 7],
+    "targetPosition": [3.03, 24.54, 9],
+    "startRotation": [0.27, -0.006, 0],
+    "targetRotation": [-0.006, -0.03, 0]
   },
   "sceneObjs": [
     {

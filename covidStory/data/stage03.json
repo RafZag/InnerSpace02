@@ -1,0 +1,83 @@
+{
+  "name": "vaccine",
+  "blurAmount": 0.6,
+  "blurCenter": 1.0,
+  "camera": {
+    "start": [0, 0, 60],
+    "end": [2, -3, 15]
+  },
+  "stageContainer": {
+    "startPosition": [0, 0, 0],
+    "targetPosition": [0, 0, 0],
+    "startRotation": [1.3, -2.72, 0],
+    "targetRotation": [-0.91, -1.19, 0]
+  },
+  "sceneObjs": [
+    {
+      "name": "cell",
+      "gltfFile": "covidStory/gltf03/cell.glb",
+      "color": 3,
+      "parent": "stageContainer",
+      "particleCount": 40000,
+      "particleSize": 4,
+      "particlesWobble": 0.01,
+      "surfaceNoise": 0.01,
+      "noiseScale": 6.0,
+      "startPosition": [0, 0, 0],
+      "targetPosition": [0, 0, 0],
+      "startRotation": [0, 0, 0],
+      "targetRotation": [0, 0, 0],
+      "startScale": 1,
+      "targetScale": 1,
+      "show": true,
+      "showRangeStrat": 0,
+      "showRangeEnd": 1,
+      "animStart": 0,
+      "animStop": 1
+    },
+    {
+      "name": "outputElement",
+      "gltfFile": "covidStory/gltf03/mRNAoutputElement.glb",
+      "color": 3,
+      "parent": "stageContainer",
+      "particleCount": 500,
+      "particleSize": 4,
+      "particlesWobble": 0.01,
+      "surfaceNoise": 0.01,
+      "noiseScale": 6.0,
+      "startPosition": [0, 0, 0],
+      "targetPosition": [0, 0, 0],
+      "startRotation": [0, 0, 0],
+      "targetRotation": [0, 0, 0],
+      "startScale": 0.1,
+      "targetScale": 0.1,
+      "show": true,
+      "showRangeStrat": 0,
+      "showRangeEnd": 1,
+      "animStart": 0,
+      "animStop": 1
+    },
+    {
+      "name": "inputElement",
+      "gltfFile": "covidStory/gltf03/mRNAinputElement.glb",
+      "color": 3,
+      "parent": "stageContainer",
+      "particleCount": 500,
+      "particleSize": 4,
+      "particlesWobble": 0.01,
+      "surfaceNoise": 0.01,
+      "noiseScale": 6.0,
+      "startPosition": [0, 0, 0],
+      "targetPosition": [0, 0, 0],
+      "startRotation": [0, 0, 0],
+      "targetRotation": [0, 0, 0],
+      "startScale": 0.1,
+      "targetScale": 0.1,
+      "show": true,
+      "showRangeStrat": 0,
+      "showRangeEnd": 1,
+      "animStart": 0,
+      "animStop": 1
+    }
+  ]
+}

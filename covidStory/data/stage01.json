@@ -7,10 +7,10 @@
     "end": [0, 0, 0]
   },
   "stageContainer": {
-    "startPosition": [-60, -10, 10],
-    "targetPosition": [-2, -12, 30],
-    "startRotation": [0, -0.35, 0],
-    "targetRotation": [0.35, 0, 0]
+    "startPosition": [-30.48, -4.62, -5],
+    "targetPosition": [-1.18, -4.51, 30],
+    "startRotation": [0.15, -1.03, 0],
+    "targetRotation": [0.8, -0.95, 0]
   },
   "sceneObjs": [
     {
@@ -40,7 +40,7 @@
       "gltfFile": "covidStory/gltf01/veins.glb",
       "color": 3,
       "parent": "arm",
-      "particleCount": 20000,
+      "particleCount": 10000,
       "particleSize": 3,
       "particlesWobble": 0.01,
       "surfaceNoise": 0.0,

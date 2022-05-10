@@ -6,6 +6,7 @@ import { ShaderPass } from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/p
 import { GUI } from "https://cdn.skypack.dev/three@0.137.0/examples/jsm/libs/lil-gui.module.min.js";
 import Stats from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/libs/stats.module.js";
 import { storyStage } from "./covidStory/storyStage.js";
+import { storyStage03 } from "./covidStory/storyStage03.js";
 import { TiltShiftShader } from "./shaders/TiltShiftShader.js";
 import { VignetteShader } from "./shaders/VignetteShader.js";
 import { transitionParticles } from "./js/transitionParticles.js";
@@ -24,6 +25,9 @@ if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(naviga
 let camera, scene, renderer, stats, composer, effectPass, vignettePass;
 // let controls;
 let currentStage;
+let currentStageNo = 0;
+let nextStageNo = 1;
+let stageList = [];
 let nextStage;
 let animationProgress = 0;
 let transParticles;
@@ -58,10 +62,13 @@ const params = {
       frameDiv.style.visibility = "visible";
       frameDiv.innerHTML = "start frame";
       editFrame = 0;
+      animationProgress = 0;
       currentStage.update(editFrame);
     } else {
       editDiv.style.visibility = "hidden";
       frameDiv.style.visibility = "hidden";
+      animationProgress = 0;
+      currentStage.update(animationProgress);
     }
   },
   camRot: 0.1,
@@ -192,6 +199,7 @@ function init() {
   tiltFolder.add(params, "center", 0.1, 2, 0.01).onChange(() => {
     effectPass.uniforms["center"].value = params.center;
   });
+  tiltFolder.close();
   const vignFolder = gui.addFolder("Vignette");
   vignFolder.add(params, "vignetteOffset", 0, 2.0, 0.01).onChange(() => {
     vignettePass.uniforms["offset"].value = params.vignetteOffset;
@@ -199,6 +207,7 @@ function init() {
   vignFolder.add(params, "vignetteDarkness", 0, 1, 0.01).onChange(() => {
     vignettePass.uniforms["darkness"].value = params.vignetteDarkness;
   });
+  vignFolder.close();
 
   gui.add(params, "changeBG");
   gui.close();
@@ -209,10 +218,16 @@ function init() {
   transParticles.hide();
 
   const stage01 = new storyStage(scene, camera, "covidStory/data/stage01.json");
+  stageList.push(stage01);
   const stage02 = new storyStage(scene, camera, "covidStory/data/stage02.json");
+  stageList.push(stage02);
+  const stage03 = new storyStage03(scene, camera, "covidStory/data/stage03.json");
+  stageList.push(stage03);
 
-  currentStage = stage01;
-  nextStage = stage02;
+  currentStage = stageList[currentStageNo];
+  nextStage = stageList[currentStageNo + 1];
+
+  console.log(stageList.length);
 
   effectPass.uniforms["bluramount"].value = currentStage.blurAmount;
   params.bluramount = currentStage.blurAmount;
@@ -281,9 +296,13 @@ function switchScene() {
   params.transTween = 0;
   animationProgress = 0;
   currentStage.hide();
-  let tmp = currentStage;
-  currentStage = nextStage;
-  nextStage = tmp;
+  currentStageNo++;
+  if (currentStageNo >= stageList.length) currentStageNo = 0;
+  nextStageNo++;
+  if (nextStageNo >= stageList.length) nextStageNo = 0;
+  currentStage = stageList[currentStageNo];
+  nextStage = stageList[nextStageNo];
+  console.log("current stage: " + currentStageNo + " next stage: " + nextStageNo);
   nextStage.hide();
   currentStage.reset();
   currentStage.update(animationProgress);
@@ -333,16 +352,16 @@ function sceneTransition() {
 
 function saveFrame(frm) {
   if (editMode && editFrame == 0) {
-    currentStage.startPosition = currentStage.stageContainer.position;
-    currentStage.startRotation = currentStage.stageContainer.rotation;
-    currentStage.update(editFrame);
+    currentStage.startPosition.copy(currentStage.stageContainer.position);
+    currentStage.startRotation.copy(currentStage.stageContainer.rotation);
+    console.log(currentStage.startPosition);
     alert("start frame saved!");
   }
 
   if (editMode && editFrame == 1) {
-    currentStage.targetPosition = currentStage.stageContainer.position;
-    currentStage.targetRotation = currentStage.stageContainer.rotation;
-    currentStage.update(editFrame);
+    currentStage.targetPosition.copy(currentStage.stageContainer.position);
+    currentStage.targetRotation.copy(currentStage.stageContainer.rotation);
+    console.log(currentStage.targetPosition);
     alert("end frame saved!");
   }
 }
@@ -435,11 +454,13 @@ function onDocumentKeyDown(e) {
       frameDiv.innerHTML = "end frame";
       editFrame = 1;
       if (editMode) currentStage.update(editFrame);
+      console.log(currentStage.targetPosition);
       break;
     case "ArrowDown":
       frameDiv.innerHTML = "start frame";
       editFrame = 0;
       if (editMode) currentStage.update(editFrame);
+      console.log(currentStage.startPosition);
       break;
     case "Enter":
       saveFrame(editFrame);
