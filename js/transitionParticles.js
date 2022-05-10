@@ -5,7 +5,7 @@ class transitionParticles {
   size = 2;
   pos = new THREE.Vector3();
   direction = new THREE.Vector3(0, 0, 1);
-  speed = 4;
+  speed = 10;
   currentSpeed = this.speed;
   particleCount = 3000;
   frontBirthDistane = -150;

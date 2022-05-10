@@ -217,12 +217,12 @@ function init() {
   transParticles = new transitionParticles(scene);
   transParticles.hide();
 
+  const stage03 = new storyStage03(scene, camera, "covidStory/data/stage03.json");
+  stageList.push(stage03);
   const stage01 = new storyStage(scene, camera, "covidStory/data/stage01.json");
   stageList.push(stage01);
   const stage02 = new storyStage(scene, camera, "covidStory/data/stage02.json");
   stageList.push(stage02);
-  const stage03 = new storyStage03(scene, camera, "covidStory/data/stage03.json");
-  stageList.push(stage03);
 
   currentStage = stageList[currentStageNo];
   nextStage = stageList[currentStageNo + 1];

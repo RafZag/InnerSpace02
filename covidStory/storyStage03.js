@@ -176,7 +176,7 @@ class storyStage03 {
 
     //========== Create a path from the points
     this.inputPath = new THREE.CatmullRomCurve3(this.inputPathPoints);
-    this.inputPath.closed = true;
+    this.inputPath.closed = false;
 
     this.outputPath = new THREE.CatmullRomCurve3(this.outputPathPoints);
     this.outputPath.closed = false;
@@ -196,11 +196,11 @@ class storyStage03 {
       let tmp = new THREE.Points();
       tmp.copy(this.sceneObjects[2].particles);
       //tmp = Object.assign({}, this.sceneObjects[1].particles);
-      tmp.position.x = this.outputPath.getPoint(i * 0.002 + 0.01).x;
-      tmp.position.y = this.outputPath.getPoint(i * 0.002 + 0.01).y;
-      tmp.position.z = this.outputPath.getPoint(i * 0.002 + 0.01).z;
+      tmp.position.x = this.inputPath.getPoint(i * 0.001).x;
+      tmp.position.y = this.inputPath.getPoint(i * 0.001).y;
+      tmp.position.z = this.inputPath.getPoint(i * 0.001).z;
       tmp.scale.set(0.05, 0.05, 0.05);
-      this.mNRAoutput.push(tmp);
+      this.mNRAinput.push(tmp);
       this.stageContainer.add(tmp);
     }
 
@@ -210,11 +210,11 @@ class storyStage03 {
       let tmp = new THREE.Points();
       tmp.copy(this.sceneObjects[1].particles);
       //tmp = Object.assign({}, this.sceneObjects[1].particles);
-      tmp.position.x = this.inputPath.getPoint(i * 0.002 + 0.01).x;
-      tmp.position.y = this.inputPath.getPoint(i * 0.002 + 0.01).y;
-      tmp.position.z = this.inputPath.getPoint(i * 0.002 + 0.01).z;
+      tmp.position.x = this.outputPath.getPoint(i * 0.001).x;
+      tmp.position.y = this.outputPath.getPoint(i * 0.001).y;
+      tmp.position.z = this.outputPath.getPoint(i * 0.001).z;
       tmp.scale.set(0.05, 0.05, 0.05);
-      this.mNRAinput.push(tmp);
+      this.mNRAoutput.push(tmp);
       this.stageContainer.add(tmp);
     }
   }
@@ -257,6 +257,20 @@ class storyStage03 {
 
       this.stageContainer.position.set(posVec.x, posVec.y, posVec.z);
       this.stageContainer.rotation.set(rotVec.x, rotVec.y, rotVec.z);
+
+      for(let o=0; o < this.mNRAoutput.length; o++){
+        
+        this.mNRAoutput[o].position.x = this.outputPath.getPoint(o * 0.001 + animProgress).x;
+        this.mNRAoutput[o].position.y = this.outputPath.getPoint(o * 0.001 + animProgress).y;
+        this.mNRAoutput[o].position.z = this.outputPath.getPoint(o * 0.001 + animProgress).z;
+      }
+
+      for(let i=0; i < this.mNRAinput.length; i++){
+        
+        this.mNRAinput[i].position.x = this.inputPath.getPoint(i * 0.001 + animProgress).x;
+        this.mNRAinput[i].position.y = this.inputPath.getPoint(i * 0.001 + animProgress).y;
+        this.mNRAinput[i].position.z = this.inputPath.getPoint(i * 0.001 + animProgress).z;
+      }
 
       for (let i = 0; i < this.sceneObjects.length; i++) {
         this.sceneObjects[i].update(animProgress);
