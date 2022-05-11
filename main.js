@@ -139,7 +139,8 @@ function init() {
 
   //---------------- Render --------------------------
 
-  renderer = new THREE.WebGLRenderer({ antyalias: true, alpha: true });
+  const canvas = document.querySelector("#c");
+  renderer = new THREE.WebGLRenderer({ canvas, antyalias: true, alpha: true });
 
   renderer.setPixelRatio(window.devicePixelRatio);
 
