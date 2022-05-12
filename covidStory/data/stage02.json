@@ -2,6 +2,7 @@
   "name": "mRNA",
   "blurAmount": 0.6,
   "blurCenter": 1.0,
+  "duration": 3000,
   "camera": {
     "start": [0, 0, 60],
     "end": [2, -3, 15]

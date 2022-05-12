@@ -6,6 +6,7 @@ class storyStage03 {
   name;
   sceneObjects = [];
   stageContainer = new THREE.Object3D();
+  pathsContainer = new THREE.Object3D();
   startPosition = new THREE.Vector3();
   targetPosition = new THREE.Vector3();
   startRotation = new THREE.Vector3();
@@ -106,6 +107,7 @@ class storyStage03 {
 
   buildScene() {
     this.name = this.loadedData.name;
+    this.duration = this.loadedData.duration;
     this.ambParticles = new ambientParticles(this.stageContainer);
     // this.camera.position.z = this.loadedData.camera.start.z;
 
@@ -153,6 +155,8 @@ class storyStage03 {
       }.bind(this)
     );
 
+    this.inputPathPoints.reverse();
+
     this.stageContainer.visible = false;
     this.parentContainer.add(this.stageContainer);
     this.ready = true;
@@ -176,19 +180,10 @@ class storyStage03 {
 
     //========== Create a path from the points
     this.inputPath = new THREE.CatmullRomCurve3(this.inputPathPoints);
-    this.inputPath.closed = false;
+    this.inputPath.closed = true;
 
     this.outputPath = new THREE.CatmullRomCurve3(this.outputPathPoints);
     this.outputPath.closed = false;
-
-    // let radius = 0.1;
-    // //========== Create a tube geometry that represents our curve
-    // let geometry = new THREE.TubeGeometry(curvePath, 600, radius, 10, false);
-
-    // //========== add tube to the scene
-    // let material = new THREE.MeshBasicMaterial({ color: this.colorPallete[3], side: THREE.DoubleSide, transparent: true, opacity: 1 });
-    // let tube = new THREE.Mesh(geometry, material);
-    // this.stageContainer.add(tube);
 
     for (let i = 0; i < 100; i++) {
       // let tmp = new particleObject(this.stageContainer, this.sceneObjects[1].modelURL, this.sceneObjects[1].particleParams.particleColor);
@@ -201,7 +196,7 @@ class storyStage03 {
       tmp.position.z = this.inputPath.getPoint(i * 0.001).z;
       tmp.scale.set(0.05, 0.05, 0.05);
       this.mNRAinput.push(tmp);
-      this.stageContainer.add(tmp);
+      this.pathsContainer.add(tmp);
     }
 
     for (let i = 0; i < 100; i++) {
@@ -215,8 +210,28 @@ class storyStage03 {
       tmp.position.z = this.outputPath.getPoint(i * 0.001).z;
       tmp.scale.set(0.05, 0.05, 0.05);
       this.mNRAoutput.push(tmp);
-      this.stageContainer.add(tmp);
+      this.pathsContainer.add(tmp);
     }
+    const points1 = this.inputPath.getPoints(50);
+    const inputLineGeometry = new THREE.BufferGeometry().setFromPoints(points1);
+    const material1 = new THREE.LineBasicMaterial({ color: 0xff0000 });
+
+    const inputLline = new THREE.Line(inputLineGeometry, material1);
+    this.pathsContainer.add(inputLline);
+
+    const points2 = this.outputPath.getPoints(50);
+    const outputLineGeometry = new THREE.BufferGeometry().setFromPoints(points2);
+    const material2 = new THREE.LineBasicMaterial({ color: 0x00ff00 });
+
+    const outputLineLline = new THREE.Line(outputLineGeometry, material2);
+    this.pathsContainer.add(outputLineLline);
+
+    this.sceneObjects[2].particles.visible = false;
+    this.sceneObjects[1].particles.visible = false;
+
+    this.stageContainer.add(this.pathsContainer);
+
+    this.pathsContainer.rotation.set(-1.57, 3.14, 1.57);
   }
 
   show() {
@@ -258,18 +273,20 @@ class storyStage03 {
       this.stageContainer.position.set(posVec.x, posVec.y, posVec.z);
       this.stageContainer.rotation.set(rotVec.x, rotVec.y, rotVec.z);
 
-      for(let o=0; o < this.mNRAoutput.length; o++){
-        
-        this.mNRAoutput[o].position.x = this.outputPath.getPoint(o * 0.001 + animProgress).x;
-        this.mNRAoutput[o].position.y = this.outputPath.getPoint(o * 0.001 + animProgress).y;
-        this.mNRAoutput[o].position.z = this.outputPath.getPoint(o * 0.001 + animProgress).z;
+      for (let o = 0; o < this.mNRAoutput.length; o++) {
+        let p = o * 0.001 + animProgress;
+        if (p > 1) p = 1;
+        this.mNRAoutput[o].position.x = this.outputPath.getPoint(p).x;
+        this.mNRAoutput[o].position.y = this.outputPath.getPoint(p).y;
+        this.mNRAoutput[o].position.z = this.outputPath.getPoint(p).z;
       }
 
-      for(let i=0; i < this.mNRAinput.length; i++){
-        
-        this.mNRAinput[i].position.x = this.inputPath.getPoint(i * 0.001 + animProgress).x;
-        this.mNRAinput[i].position.y = this.inputPath.getPoint(i * 0.001 + animProgress).y;
-        this.mNRAinput[i].position.z = this.inputPath.getPoint(i * 0.001 + animProgress).z;
+      for (let i = 0; i < this.mNRAinput.length; i++) {
+        let p = i * 0.001 + animProgress + 0.5;
+        // if (p > 1) p = 1;
+        this.mNRAinput[i].position.x = this.inputPath.getPoint(p).x;
+        this.mNRAinput[i].position.y = this.inputPath.getPoint(p).y;
+        this.mNRAinput[i].position.z = this.inputPath.getPoint(p).z;
       }
 
       for (let i = 0; i < this.sceneObjects.length; i++) {

@@ -254,26 +254,28 @@ class particleObject {
     if (this.show) this.showMe();
     else this.hideMe();
 
-    let p;
+    if (this.visible) {
+      let p;
 
-    // const p = this.mapValue(progress, this.animStart, this.animStop, 0, 1);
-    if (progress >= this.animStart && progress <= this.animStop) {
-      p = (progress - this.animStart) / (this.animStop - this.animStart);
+      // const p = this.mapValue(progress, this.animStart, this.animStop, 0, 1);
+      if (progress >= this.animStart && progress <= this.animStop) {
+        p = (progress - this.animStart) / (this.animStop - this.animStart);
+      }
+
+      let posVec = new THREE.Vector3();
+      posVec.lerpVectors(this.startPosition, this.targetPosition, p);
+      if (p <= 1) this.setPosition(posVec);
+      // if (p == 1) this.setPosition(this.targetPosition);
+
+      let rotVec = new THREE.Vector3();
+      rotVec.lerpVectors(this.startRotation, this.targetRotation, p);
+      if (p <= 1) this.setRotation(rotVec);
+
+      this.uniformsValues["time"].value = performance.now() * this.particleParams.wobbleSpeed;
+      this.uniformsValues["wobble"].value = this.particleParams.particlesWobble;
+      this.uniformsValues["resolution"].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
+      this.uniformsValues.needsUpdate = true;
     }
-
-    let posVec = new THREE.Vector3();
-    posVec.lerpVectors(this.startPosition, this.targetPosition, p);
-    if (p <= 1) this.setPosition(posVec);
-    // if (p == 1) this.setPosition(this.targetPosition);
-
-    let rotVec = new THREE.Vector3();
-    rotVec.lerpVectors(this.startRotation, this.targetRotation, p);
-    if (p <= 1) this.setRotation(rotVec);
-
-    this.uniformsValues["time"].value = performance.now() * this.particleParams.wobbleSpeed;
-    this.uniformsValues["wobble"].value = this.particleParams.particlesWobble;
-    this.uniformsValues["resolution"].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
-    this.uniformsValues.needsUpdate = true;
   }
 }
 

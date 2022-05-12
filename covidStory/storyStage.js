@@ -11,6 +11,7 @@ class storyStage {
   startRotation = new THREE.Vector3();
   targetRotation = new THREE.Vector3();
   camera;
+  duration;
   blurAmount = 0.2;
   blurCenter = 1.0;
 
@@ -55,6 +56,7 @@ class storyStage {
   buildScene() {
     this.name = this.loadedData.name;
     this.ambParticles = new ambientParticles(this.stageContainer);
+    this.duration = this.loadedData.duration;
     // this.camera.position.z = this.loadedData.camera.start.z;
 
     this.startPosition.fromArray(this.loadedData.stageContainer.startPosition);

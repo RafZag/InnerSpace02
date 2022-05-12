@@ -90,8 +90,9 @@ const params = {
   transTween: 0,
 };
 
-function startAnim(e) {
-  if (!currentStage.complete) animateTween.to({ animTween: 1 }, 3000).start();
+function startAnim() {
+  console.log(currentStage.duration);
+  if (!currentStage.complete) animateTween.to({ animTween: 1 }, currentStage.duration).start();
   else sceneTransition();
 }
 
@@ -227,8 +228,6 @@ function init() {
 
   currentStage = stageList[currentStageNo];
   nextStage = stageList[currentStageNo + 1];
-
-  console.log(stageList.length);
 
   effectPass.uniforms["bluramount"].value = currentStage.blurAmount;
   params.bluramount = currentStage.blurAmount;

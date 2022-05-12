@@ -2,6 +2,7 @@
   "name": "vaccine",
   "blurAmount": 0.6,
   "blurCenter": 1.0,
+  "duration": 5000,
   "camera": {
     "start": [0, 0, 60],
     "end": [2, -3, 15]
@@ -9,8 +10,8 @@
   "stageContainer": {
     "startPosition": [0, 0, 0],
     "targetPosition": [0, 0, 0],
-    "startRotation": [1.3, -2.72, 0],
-    "targetRotation": [-0.91, -1.19, 0]
+    "startRotation": [0, 0, 0],
+    "targetRotation": [0, 0, 0]
   },
   "sceneObjs": [
     {
@@ -25,8 +26,8 @@
       "noiseScale": 6.0,
       "startPosition": [0, 0, 0],
       "targetPosition": [0, 0, 0],
-      "startRotation": [0, 0, 0],
-      "targetRotation": [0, 0, 0],
+      "startRotation": [0, 3.14, 0],
+      "targetRotation": [0, 3.14, 0],
       "startScale": 1,
       "targetScale": 1,
       "show": true,
@@ -51,7 +52,7 @@
       "targetRotation": [0, 0, 0],
       "startScale": 0.1,
       "targetScale": 0.1,
-      "show": true,
+      "show": false,
       "showRangeStrat": 0,
       "showRangeEnd": 1,
       "animStart": 0,
@@ -73,7 +74,7 @@
       "targetRotation": [0, 0, 0],
       "startScale": 0.1,
       "targetScale": 0.1,
-      "show": true,
+      "show": false,
       "showRangeStrat": 0,
       "showRangeEnd": 1,
       "animStart": 0,
