@@ -30,7 +30,7 @@ class transitionParticles {
 
   buildParticles() {
     let particlesParticlesGeo = new THREE.BufferGeometry();
-    const sprite = new THREE.TextureLoader().load("./img/pointSprite.png");
+    const sprite = new THREE.TextureLoader().load(window.CANVAS_ASSET_ROOT + "img/pointSprite.png");
 
     for (let i = 0; i < this.particleCount; i++) {
       const x = this.horizontalSpread * Math.random() - this.horizontalSpread / 2;
