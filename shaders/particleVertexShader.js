@@ -1,3 +1,4 @@
+/* eslint-disable */
 const particleVertexShader = /*glsl*/ `
 
 
@@ -10,7 +11,7 @@ const particleVertexShader = /*glsl*/ `
   varying vec3 vColor;
   varying float dist;
 
-  
+
 
   //-----------------------------------------------------------
 // Classic Perlin noise implementation
@@ -18,11 +19,11 @@ const particleVertexShader = /*glsl*/ `
 //-----------------------------------------------------------
 //
 //Pasted from src/classicnoise3D.glsl file,
-//from webgl-noise library by Ashima Arts and Stefan Gustavson, 
+//from webgl-noise library by Ashima Arts and Stefan Gustavson,
 //https://github.com/ashima/webgl-noise
 
 //
-// Description : Array and textureless GLSL 2D/3D/4D simplex 
+// Description : Array and textureless GLSL 2D/3D/4D simplex
 //               noise functions.
 //      Author : Ian McEwan, Ashima Arts.
 //  Maintainer : ijm
@@ -30,7 +31,7 @@ const particleVertexShader = /*glsl*/ `
 //     License : Copyright (C) 2011 Ashima Arts. All rights reserved.
 //               Distributed under the MIT License. See LICENSE file.
 //               https://github.com/ashima/webgl-noise
-//  
+//
 
 vec3 mod289(vec3 x)
 {
@@ -122,9 +123,9 @@ float cnoise(vec3 P)
   vec3 fade_xyz = fade(Pf0);
   vec4 n_z = mix(vec4(n000, n100, n010, n110), vec4(n001, n101, n011, n111), fade_xyz.z);
   vec2 n_yz = mix(n_z.xy, n_z.zw, fade_xyz.y);
-  float n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x); 
+  float n_xyz = mix(n_yz.x, n_yz.y, fade_xyz.x);
   return 2.2 * n_xyz;
-} 
+}
 //-----------------------------------------
 
   float hermite(float t)
@@ -148,11 +149,11 @@ float cnoise(vec3 P)
   void main() {
     vColor = color;
     vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
-   
-    float w = cnoise(vec3(position.x / noiseScale, position.y / noiseScale + time * 0.2, position.z / noiseScale));	
-    w += 1.;	
-	  float displacementY = w * surfaceNoise;	
-    vec4 n = modelViewMatrix * vec4( normal, 1.0 );    
+
+    float w = cnoise(vec3(position.x / noiseScale, position.y / noiseScale + time * 0.2, position.z / noiseScale));
+    w += 1.;
+	  float displacementY = w * surfaceNoise;
+    vec4 n = modelViewMatrix * vec4( normal, 1.0 );
 
     float perimeter = resolution.x + resolution.y;
     float area = resolution.x * resolution.y;

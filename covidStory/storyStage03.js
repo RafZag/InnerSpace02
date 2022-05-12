@@ -1,3 +1,4 @@
+/* eslint-disable */
 import * as THREE from "https://cdn.skypack.dev/three@0.132.0/build/three.module.js";
 import { particleObject } from "../js/particleObject.js";
 import { ambientParticles } from "../js/ambientParticles.js";
@@ -125,7 +126,7 @@ class storyStage03 {
           if (this.sceneObjects[i].name == item.parent) tmpParent = this.sceneObjects[i].objectContainer;
         }
 
-        const tmpObj = new particleObject(tmpParent, item.gltfFile, this.colorPallete[item.color]);
+        const tmpObj = new particleObject(tmpParent, window.CANVAS_ASSET_ROOT + item.gltfFile, this.colorPallete[item.color]);
         tmpObj.name = item.name;
         tmpObj.particleParams.particleCount = item.particleCount;
         tmpObj.particleParams.particleSize = item.particleSize;
@@ -259,14 +260,14 @@ class storyStage03 {
       this.stageContainer.rotation.set(rotVec.x, rotVec.y, rotVec.z);
 
       for(let o=0; o < this.mNRAoutput.length; o++){
-        
+
         this.mNRAoutput[o].position.x = this.outputPath.getPoint(o * 0.001 + animProgress).x;
         this.mNRAoutput[o].position.y = this.outputPath.getPoint(o * 0.001 + animProgress).y;
         this.mNRAoutput[o].position.z = this.outputPath.getPoint(o * 0.001 + animProgress).z;
       }
 
       for(let i=0; i < this.mNRAinput.length; i++){
-        
+
         this.mNRAinput[i].position.x = this.inputPath.getPoint(i * 0.001 + animProgress).x;
         this.mNRAinput[i].position.y = this.inputPath.getPoint(i * 0.001 + animProgress).y;
         this.mNRAinput[i].position.z = this.inputPath.getPoint(i * 0.001 + animProgress).z;

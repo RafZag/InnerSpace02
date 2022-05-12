@@ -1,3 +1,4 @@
+/* eslint-disable */
 import * as THREE from "https://cdn.skypack.dev/three@0.132.0/build/three.module.js";
 import { particleObject } from "../js/particleObject.js";
 import { ambientParticles } from "../js/ambientParticles.js";
@@ -73,7 +74,7 @@ class storyStage {
           if (this.sceneObjects[i].name == item.parent) tmpParent = this.sceneObjects[i].objectContainer;
         }
 
-        const tmpObj = new particleObject(tmpParent, item.gltfFile, this.colorPallete[item.color]);
+        const tmpObj = new particleObject(tmpParent, window.CANVAS_ASSET_ROOT + item.gltfFile, this.colorPallete[item.color]);
         tmpObj.name = item.name;
         tmpObj.particleParams.particleCount = item.particleCount;
         tmpObj.particleParams.particleSize = item.particleSize;
