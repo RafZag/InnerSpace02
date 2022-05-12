@@ -1,3 +1,4 @@
+/* eslint-disable */
 /**
  * Tween.js - Licensed under the MIT license
  * https://github.com/tweenjs/tween.js

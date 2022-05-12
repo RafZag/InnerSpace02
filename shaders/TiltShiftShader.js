@@ -1,3 +1,4 @@
+/* eslint-disable */
 const TiltShiftShader = {
   uniforms: {
     tDiffuse: { value: null },
@@ -20,27 +21,27 @@ const TiltShiftShader = {
 
   fragmentShader: /* glsl */ `
 
-		uniform sampler2D tDiffuse;		
+		uniform sampler2D tDiffuse;
         uniform float bluramount;
         uniform float center;
         uniform float stepSize;
         uniform float steps;
 
 		varying highp vec2 vUv;
-       
+
 		void main(){
 
             float minOffs = (float(steps-1.0)) / -2.0;
             float maxOffs = (float(steps-1.0)) / +2.0;
-            
+
             vec2 tcoord = vUv.xy ;
-            
+
             float amount;
             vec4 blurred;
 
-            //Work out how much to blur based on the mid point 
+            //Work out how much to blur based on the mid point
             amount = pow((tcoord.y * center) * 2.0 - 1.0, 2.0) * bluramount;
-        
+
             //This is the accumulation of color from the surrounding pixels in the texture
             blurred = vec4(0.0, 0.0, 0.0, 1.0);
 
@@ -55,16 +56,16 @@ const TiltShiftShader = {
                     temp_tcoord.x += offsX * amount * stepSize;
                     temp_tcoord.y += offsY * amount * stepSize;
 
-                        //accumulate the sample 
+                        //accumulate the sample
                     blurred += texture2D(tDiffuse, temp_tcoord);
-                
+
                 } //for y
-            } //for x 
-                
+            } //for x
+
                 //because we are doing an average, we divide by the amount (x AND y, hence steps * steps)
             blurred /= float(steps * steps);
 
-            
+
 			// gl_FragColor = texture2D(tDiffuse, vUv);
             gl_FragColor = blurred;
 
