@@ -82,8 +82,11 @@ class storyStage {
         tmpObj.particleParams.particleSize = item.particleSize;
         tmpObj.particleParams.particlesWobble = item.particlesWobble;
 
-        tmpObj.particleParams.surfaceNoise = item.surfaceNoise;
-        tmpObj.particleParams.noiseScale = item.noiseScale;
+        tmpObj.particleParams.surfaceNoiseAmpl = item.surfaceNoiseAmpl;
+        tmpObj.particleParams.surfaceNoiseScale = item.surfaceNoiseScale;
+        tmpObj.particleParams.surfaceNoiseSpeed = item.surfaceNoiseSpeed;
+        tmpObj.objWobbleAmp = item.objWobbleAmp;
+        tmpObj.objWobbleSpeed = item.objWobbleSpeed;
         tmpObj.buildParticles();
         tmpParent.add(tmpObj.objectContainer);
         tmpObj.setScale(item.startScale);
@@ -107,7 +110,11 @@ class storyStage {
     this.stageContainer.visible = false;
     this.parentContainer.add(this.stageContainer);
     this.ready = true;
+    this.sceneExtraFeatures();
   }
+
+  sceneExtraFeatures() {}
+
   show() {
     this.stageContainer.visible = true;
     this.visible = true;

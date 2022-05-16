@@ -17,14 +17,15 @@ class particleObject {
   scale = 1.0;
   startScale = 1.0;
   targetScale = 1.0;
-  spinRate = 0.2;
-  floatRate = 0.5;
   showPercent = 0;
   showStep = 0.01;
   showRangeStrat = 0;
   showRangeEnd = 1;
   animStart = 0;
   animStop = 1;
+  objWobbleDir = new THREE.Vector3();
+  objWobbleSpeed = 0;
+  objWobbleAmp = 0;
   uuid;
   name;
 
@@ -54,8 +55,9 @@ class particleObject {
     particleSizeVariation: 0.025,
     particlesWobble: 0.04,
     wobbleSpeed: 0.002,
-    surfaceNoise: 0.02,
-    noiseScale: 8,
+    surfaceNoiseAmpl: 0.01,
+    surfaceNoiseScale: 8,
+    surfaceNoiseSpeed: 0.2,
   };
 
   MAX_PARTICLES = 500000;
@@ -83,12 +85,19 @@ class particleObject {
 
     this.geometry.setDrawRange(0, this.particleParams.particleCount);
 
+    this.objWobbleDir = new THREE.Vector3(Math.random(), Math.random(), Math.random());
+
     this.uniformsValues = {
       rimColor: { value: new THREE.Color("rgb(255, 255, 255)") },
       time: { value: 0.0 },
       wobble: { value: this.particleParams.particlesWobble },
-      surfaceNoise: { value: this.particleParams.surfaceNoise },
-      noiseScale: { value: this.particleParams.noiseScale },
+      wobbleSpeed: { value: this.particleParams.particlesWobble },
+      surfaceNoiseSpeed: { value: this.particleParams.surfaceNoiseSpeed },
+      surfaceNoiseAmpl: { value: this.particleParams.surfaceNoiseAmpl },
+      surfaceNoiseScale: { value: this.particleParams.surfaceNoiseScale },
+      objWobbleDir: { value: this.objWobbleDir },
+      objWobbleSpeed: { value: this.objWobbleSpeed },
+      objWobbleAmp: { value: this.objWobbleAmp },
       resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
     };
 
@@ -273,7 +282,6 @@ class particleObject {
       if (p <= 1) this.setRotation(rotVec);
 
       this.uniformsValues["time"].value = performance.now() * this.particleParams.wobbleSpeed;
-      this.uniformsValues["wobble"].value = this.particleParams.particlesWobble;
       this.uniformsValues["resolution"].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
       this.uniformsValues.needsUpdate = true;
     }

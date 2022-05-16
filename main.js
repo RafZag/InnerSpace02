@@ -57,7 +57,7 @@ const params = {
   editMode: function () {
     editMode = !editMode;
     // controls.enabled = editMode;
-    if (!editMode) camera.position.copy(camPosition);
+    // if (!editMode) camera.position.copy(camPosition);
     if (editMode) {
       editDiv.style.visibility = "visible";
       frameDiv.style.visibility = "visible";
@@ -92,7 +92,6 @@ const params = {
 };
 
 function startAnim() {
-  console.log(currentStage.duration);
   if (!currentStage.complete) animateTween.to({ animTween: 1 }, currentStage.duration).start();
   else sceneTransition();
 }
@@ -220,14 +219,18 @@ function init() {
   transParticles = new transitionParticles(scene);
   transParticles.hide();
 
-  const stage03 = new storyStage03(scene, camera, window.CANVAS_ASSET_ROOT + "covidStory/data/stage03.json");
-  stageList.push(stage03);
   const stage01 = new storyStage(scene, camera, window.CANVAS_ASSET_ROOT + "covidStory/data/stage01.json");
   stageList.push(stage01);
   const stage02 = new storyStage(scene, camera, window.CANVAS_ASSET_ROOT + "covidStory/data/stage02.json");
   stageList.push(stage02);
+  const stage03 = new storyStage03(scene, camera, window.CANVAS_ASSET_ROOT + "covidStory/data/stage03.json");
+  stageList.push(stage03);
+  const stage04 = new storyStage(scene, camera, window.CANVAS_ASSET_ROOT + "covidStory/data/stage04.json");
+  stageList.push(stage04);
 
   currentStage = stageList[currentStageNo];
+  let nxt = currentStageNo + 1;
+  if (nxt >= stageList.length) nxt = 0;
   nextStage = stageList[currentStageNo + 1];
 
   effectPass.uniforms["bluramount"].value = currentStage.blurAmount;

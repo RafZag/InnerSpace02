@@ -4,8 +4,12 @@ const particleVertexShader = /*glsl*/ `
 
   uniform float time;
   uniform float wobble;
-  uniform float surfaceNoise;
-  uniform float noiseScale;
+  uniform float surfaceNoiseSpeed;
+  uniform float surfaceNoiseAmpl;
+  uniform float surfaceNoiseScale;
+  uniform vec3 objWobbleDir;
+  uniform float objWobbleAmp;
+  uniform float objWobbleSpeed;
   uniform vec2 resolution;
   attribute float size;
   varying vec3 vColor;
@@ -150,9 +154,9 @@ float cnoise(vec3 P)
     vColor = color;
     vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
 
-    float w = cnoise(vec3(position.x / noiseScale, position.y / noiseScale + time * 0.2, position.z / noiseScale));
+    float w = cnoise(vec3(position.x / surfaceNoiseScale, position.y / surfaceNoiseScale + time * surfaceNoiseSpeed, position.z / surfaceNoiseScale));
     w += 1.;
-	  float displacementY = w * surfaceNoise;
+	  float displacementY = w * surfaceNoiseAmpl;
     vec4 n = modelViewMatrix * vec4( normal, 1.0 );
 
     float perimeter = resolution.x + resolution.y;
@@ -161,13 +165,17 @@ float cnoise(vec3 P)
     float prop = 1. - size / area;
     gl_PointSize = size * ( 20.0 / -mvPosition.z ) * prop;
 
+    vec3 objWobble;
+    objWobble.x = noise((time + 1.0) * objWobbleSpeed, objWobbleDir.x * 0.1) * objWobbleAmp;
+    objWobble.y = noise((time - 2.5) * objWobbleSpeed, objWobbleDir.y * 0.1) * objWobbleAmp;
+    objWobble.z = noise((time + 0.4) * objWobbleSpeed, objWobbleDir.z * 0.1) * objWobbleAmp;
 
     // float p = -mvPosition.z;
     // gl_PointSize = size + p;
 
-    mvPosition.x += (noise(time + 1., fract(float(gl_VertexID) * 0.0001)) - 0.5) * wobble;
-    mvPosition.y += (noise(time + 1.2, fract(float(gl_VertexID) * 0.001)) - 0.5) * wobble;
-    mvPosition.z += (noise(time - 1., fract(float(gl_VertexID) * 0.00001)) - 0.5) * wobble;
+    mvPosition.x += (noise(time + 1., fract(float(gl_VertexID) * 0.0001)) - 0.5) * wobble + objWobble.x;
+    mvPosition.y += (noise(time + 1.2, fract(float(gl_VertexID) * 0.001)) - 0.5) * wobble + objWobble.y;
+    mvPosition.z += (noise(time - 1., fract(float(gl_VertexID) * 0.00001)) - 0.5) * wobble + objWobble.z;
 
     vec4 pos = mvPosition - n * displacementY;
 
