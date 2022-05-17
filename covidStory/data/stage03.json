@@ -42,10 +42,10 @@
     {
       "name": "outputElement",
       "gltfFile": "covidStory/gltf03/mRNAoutputElement.glb",
-      "color": 3,
+      "color": 4,
       "parent": "stageContainer",
       "particleCount": 500,
-      "particleSize": 4,
+      "particleSize": 3,
       "particlesWobble": 0.01,
       "surfaceNoiseAmpl": 0.01,
       "surfaceNoiseScale": 6,
@@ -67,7 +67,7 @@
     {
       "name": "inputElement",
       "gltfFile": "covidStory/gltf03/mRNAinputElement.glb",
-      "color": 3,
+      "color": 5,
       "parent": "stageContainer",
       "particleCount": 500,
       "particleSize": 4,

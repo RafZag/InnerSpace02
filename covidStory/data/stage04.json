@@ -42,7 +42,7 @@
     {
       "name": "cell2spikes",
       "gltfFile": "covidStory/gltf04/cell2spikes.glb",
-      "color": 3,
+      "color": 5,
       "parent": "cell2",
       "particleCount": 50000,
       "particleSize": 1,
@@ -92,7 +92,7 @@
     {
       "name": "spikeProtein",
       "gltfFile": "covidStory/gltf04/spikeProtein.glb",
-      "color": 3,
+      "color": 5,
       "parent": "cell1",
       "particleCount": 2000,
       "particleSize": 1,
@@ -117,7 +117,7 @@
     {
       "name": "ambientCell1",
       "gltfFile": "covidStory/gltf04/sphere.glb",
-      "color": 3,
+      "color": 4,
       "parent": "stageContainer",
       "particleCount": 20000,
       "particleSize": 4,
@@ -142,7 +142,7 @@
     {
       "name": "ambientCell2",
       "gltfFile": "covidStory/gltf04/sphere.glb",
-      "color": 3,
+      "color": 4,
       "parent": "stageContainer",
       "particleCount": 18000,
       "particleSize": 4,
@@ -167,7 +167,7 @@
     {
       "name": "ambientCell3",
       "gltfFile": "covidStory/gltf04/sphere.glb",
-      "color": 3,
+      "color": 4,
       "parent": "stageContainer",
       "particleCount": 15000,
       "particleSize": 4,
@@ -192,7 +192,7 @@
     {
       "name": "ambientCell4",
       "gltfFile": "covidStory/gltf04/sphere.glb",
-      "color": 3,
+      "color": 4,
       "parent": "stageContainer",
       "particleCount": 15000,
       "particleSize": 4,
@@ -217,7 +217,7 @@
     {
       "name": "ambientCell5",
       "gltfFile": "covidStory/gltf04/sphere.glb",
-      "color": 3,
+      "color": 4,
       "parent": "stageContainer",
       "particleCount": 18000,
       "particleSize": 4,
@@ -242,7 +242,7 @@
     {
       "name": "ambientCell6",
       "gltfFile": "covidStory/gltf04/sphere.glb",
-      "color": 3,
+      "color": 4,
       "parent": "stageContainer",
       "particleCount": 15000,
       "particleSize": 4,

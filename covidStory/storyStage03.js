@@ -5,7 +5,6 @@ import { ambientParticles } from "../js/ambientParticles.js";
 import { storyStage } from "./storyStage.js";
 
 class storyStage03 extends storyStage {
-  stageContainer = new THREE.Object3D();
   pathsContainer = new THREE.Object3D();
 
   mNRAinput = [];

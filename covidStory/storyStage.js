@@ -109,7 +109,7 @@ class storyStage {
 
     this.stageContainer.visible = false;
     this.parentContainer.add(this.stageContainer);
-    this.ready = true;
+    this.ready = false;
     this.sceneExtraFeatures();
   }
 
@@ -139,7 +139,18 @@ class storyStage {
     this.complete = false;
   }
 
+  readyCheck(){ 
+    if(this.sceneObjects.length > 0){
+      let n = 0;
+      for(let i = 0; i < this.sceneObjects.length; i++){
+        if( this.sceneObjects[i].ready) n++
+      }
+      if (n >= this.sceneObjects.length) this.ready = true;
+    }
+  }
+
   update(animProgress) {
+  
     if (this.visible) {
       this.ambParticles.update();
 

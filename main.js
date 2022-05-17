@@ -39,6 +39,7 @@ let editFrame = 0;
 let transition = false;
 let rightButtonDown = false;
 let leftButtonDown = false;
+let allStagesReady = false;
 
 let mouse = new THREE.Vector3(0, 0, 0.5);
 let camTargetRotX = 0;
@@ -47,6 +48,7 @@ let camTargetRotY = 0;
 let msgDiv = document.getElementById("msg");
 let editDiv = document.getElementById("edit");
 let frameDiv = document.getElementById("frame");
+let loader = document.getElementById("loader");
 
 let camPosition = new THREE.Vector3(0, 0, 60);
 let vignetteColor = new THREE.Color(0xcad3da);
@@ -238,6 +240,9 @@ function init() {
   effectPass.uniforms["center"].value = currentStage.blurCenter;
   vignettePass.uniforms["offset"].value = params.vignetteOffset;
   vignettePass.uniforms["darkness"].value = params.vignetteDarkness;
+
+  // console.log(renderer.info);
+
 }
 
 //---------------- Animate --------------------------
@@ -245,6 +250,20 @@ function init() {
 function animate(time) {
   if (transition) transParticles.fly();
   else transParticles.stop();
+
+  // if(!allStagesReady) {
+  //   let readyNo = 0;
+  //   for(let i = 0; i < stageList.length; i++){
+  //     stageList[i].readyCheck();
+  //     if(stageList[i].ready) readyNo++;
+  //   }
+  //   if (readyNo == stageList.length) {
+  //     allStagesReady = true;
+  //     console.log("All ready!");
+  //   }    
+  // }
+  currentStage.readyCheck();
+  if(currentStage.ready) loader.style.visibility = "hidden";
 
   if (currentStage.ready && !currentStage.visible) currentStage.show();
   if (!editMode) {
@@ -335,7 +354,6 @@ function sceneTransition() {
       TWEEN.remove(transInTween);
     })
     .onUpdate(() => {
-      currentStage.update(animationProgress);
       currentStage.stageContainer.position.z = currentStage.startPosition.z - 1000 + params.transTween * 1000;
     });
 

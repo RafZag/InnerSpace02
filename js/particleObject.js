@@ -127,10 +127,9 @@ class particleObject {
       function (gltf) {
         // this.parentContainer.add(gltf.scene);
         this.surfaceMesh = gltf.scene.children[0]; // Object
-
         // console.log(url);
         // console.log(this.surfaceMesh);
-        this.sampler = new MeshSurfaceSampler(this.surfaceMesh).setWeightAttribute("color").build();
+        this.sampler = new MeshSurfaceSampler(this.surfaceMesh).setWeightAttribute("color").build();        
         this.sampleSurface();
       }.bind(this),
       function (xhr) {
@@ -142,13 +141,14 @@ class particleObject {
     );
   }
 
-  sampleSurface() {
+  sampleSurface() {  
     let _position = new THREE.Vector3();
     for (let i = 0; i < this.MAX_PARTICLES; i++) {
       this.sampler.sample(_position);
       let v = new THREE.Vector3(_position.x, _position.y, _position.z);
       this.surfaceVerts.push(v);
     }
+    // this.sampler.removeFromParent();
     this.surfaceScatter();
   }
 
@@ -163,6 +163,12 @@ class particleObject {
     }
     this.particles.geometry.attributes.position.needsUpdate = true;
     this.resample(0);
+    // this.particles.geometry.dispose();
+    // this.particles.material.dispose();
+    // this.particles.removeFromParent();
+    this.surfaceMesh.geometry.dispose();
+    this.surfaceMesh.material.dispose();
+    this.surfaceMesh.removeFromParent();
     this.ready = true;
   }
 
@@ -241,6 +247,8 @@ class particleObject {
       let n = Math.ceil(this.particleParams.particleCount * this.showPercent);
       this.resample(n);
       if (n >= this.particleParams.particleCount) this.visible = true;
+      this.uniformsValues["time"].value = performance.now() * this.particleParams.wobbleSpeed;
+      this.uniformsValues.needsUpdate = true;
     }
   }
 
@@ -258,32 +266,34 @@ class particleObject {
   }
 
   update(progress) {
-    if (progress >= this.showRangeStrat && progress <= this.showRangeEnd) this.show = true;
-    else this.show = false;
+    if (this.ready) {
+      if (progress >= this.showRangeStrat && progress <= this.showRangeEnd) this.show = true;
+      else this.show = false;
 
-    if (this.show) this.showMe();
-    else this.hideMe();
+      if (this.show) this.showMe();
+      else this.hideMe();
 
-    if (this.visible) {
-      let p;
+      if (this.visible) {
+        let p;
 
-      // const p = this.mapValue(progress, this.animStart, this.animStop, 0, 1);
-      if (progress >= this.animStart && progress <= this.animStop) {
-        p = (progress - this.animStart) / (this.animStop - this.animStart);
+        // const p = this.mapValue(progress, this.animStart, this.animStop, 0, 1);
+        if (progress >= this.animStart && progress <= this.animStop) {
+          p = (progress - this.animStart) / (this.animStop - this.animStart);
+        }
+
+        let posVec = new THREE.Vector3();
+        posVec.lerpVectors(this.startPosition, this.targetPosition, p);
+        if (p <= 1) this.setPosition(posVec);
+        // if (p == 1) this.setPosition(this.targetPosition);
+
+        let rotVec = new THREE.Vector3();
+        rotVec.lerpVectors(this.startRotation, this.targetRotation, p);
+        if (p <= 1) this.setRotation(rotVec);
+
+        this.uniformsValues["time"].value = performance.now() * this.particleParams.wobbleSpeed;
+        this.uniformsValues["resolution"].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
+        this.uniformsValues.needsUpdate = true;
       }
-
-      let posVec = new THREE.Vector3();
-      posVec.lerpVectors(this.startPosition, this.targetPosition, p);
-      if (p <= 1) this.setPosition(posVec);
-      // if (p == 1) this.setPosition(this.targetPosition);
-
-      let rotVec = new THREE.Vector3();
-      rotVec.lerpVectors(this.startRotation, this.targetRotation, p);
-      if (p <= 1) this.setRotation(rotVec);
-
-      this.uniformsValues["time"].value = performance.now() * this.particleParams.wobbleSpeed;
-      this.uniformsValues["resolution"].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
-      this.uniformsValues.needsUpdate = true;
     }
   }
 }

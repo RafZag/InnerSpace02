@@ -61,6 +61,40 @@ body {
   z-index: 1;
 }
 
+#loader {
+  position: absolute;
+  display: block;
+  top: 50%;
+  left: 45%;  
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;  
+  font-weight: bold;
+  text-align: center;
+  font-size: 36px;
+  color: #4fcfae;
+  z-index: 1;
+}
+
+.lineUp {
+  animation: 1s anim-lineUp ease-out infinite;
+}
+@keyframes anim-lineUp {
+  0% {
+    opacity: 0;
+    transform: translateY(80%);
+  }
+  20% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(0%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0%);
+  }
+}
+
 #c {
   z-index: 0;
 }
