@@ -180,11 +180,27 @@ function init() {
   // // controls.target = new THREE.Vector3(0, 18, 0);
   // controls.enableDamping = true;
 
+  // --------------- Canvas events --------------------
+
+  events.fire(canvas, "canvas:loading", {
+    percent: 0,
+  });
+  events.fire(canvas, "canvas:loading", {
+    percent: 100,
+  });
+  events.fire(canvas, "canvas:canvas:loaded", {
+    percent: 100,
+  });
+
   //---------------------- Listeners -----------------
 
-  events.bind(canvas, "loadProgerssEvent", function (event) {
-    console.log(event.detail.percent);
-  });
+  // events.bind(canvas, "canvas:scene-loading", function (event) {
+  //   console.log(event.detail.percent);
+  // });
+
+  // events.bind(canvas, "canvas:scene-loaded", function (event) {
+  //   console.log(event.type);
+  // });
 
   window.addEventListener("resize", onWindowResize);
   document.addEventListener("mousemove", onDocumentMouseMove, false);
@@ -260,18 +276,6 @@ function animate(time) {
   if (transition) transParticles.fly();
   else transParticles.stop();
 
-  // if(!allStagesReady) {
-  //   let readyNo = 0;
-  //   for(let i = 0; i < stageList.length; i++){
-  //     stageList[i].readyCheck();
-  //     if(stageList[i].ready) readyNo++;
-  //   }
-  //   if (readyNo == stageList.length) {
-  //     allStagesReady = true;
-  //     console.log("All ready!");
-  //   }
-  // }
-
   readyScenesCount = 0;
   if (!allStagesReady) {
     let proc = 0;
@@ -282,13 +286,18 @@ function animate(time) {
         readyScenesCount++;
       }
     }
-    if (readyScenesCount >= stageList.length) allStagesReady = true;
     proc = (proc * 100) / stageList.length;
     if (!proc) proc = 0;
     // loader.innerText = proc.toFixed() + "%";
-    events.fire(canvas, "loadProgerssEvent", {
+    events.fire(canvas, "canvas:scene-loading", {
       percent: proc.toFixed(),
     });
+    if (readyScenesCount >= stageList.length) {
+      events.fire(canvas, "canvas:scene-loaded", {
+        percent: proc.toFixed(),
+      });
+      allStagesReady = true;
+    }
   }
 
   // if (allStagesReady) loader.style.visibility = "hidden";
