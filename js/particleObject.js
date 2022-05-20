@@ -14,9 +14,9 @@ class particleObject {
   startRotation = new THREE.Vector3();
   targetPosition = new THREE.Vector3();
   targetRotation = new THREE.Vector3();
-  scale = 1.0;
-  startScale = 1.0;
-  targetScale = 1.0;
+  scale = new THREE.Vector3();
+  startScale = new THREE.Vector3();
+  targetScale = new THREE.Vector3();
   showPercent = 0;
   showStep = 0.01;
   showRangeStrat = 0;
@@ -41,6 +41,8 @@ class particleObject {
   modelURL;
   gltfLoader = new GLTFLoader();
   geometry = new THREE.BufferGeometry();
+
+  loadedProc = 0;
 
   surfaceMesh;
   sampler;
@@ -128,20 +130,20 @@ class particleObject {
         // this.parentContainer.add(gltf.scene);
         this.surfaceMesh = gltf.scene.children[0]; // Object
         // console.log(url);
-        // console.log(this.surfaceMesh);
-        this.sampler = new MeshSurfaceSampler(this.surfaceMesh).setWeightAttribute("color").build();        
+        // console.log(this.surfaceMesh.name);
         this.sampleSurface();
       }.bind(this),
       function (xhr) {
-        // console.log((xhr.loaded / xhr.total) * 100 + "% loaded");
-      },
+        this.loadedProc = xhr.loaded / xhr.total;
+      }.bind(this),
       function (error) {
         console.log("An error happened " + error);
       }
     );
   }
 
-  sampleSurface() {  
+  sampleSurface() {
+    this.sampler = new MeshSurfaceSampler(this.surfaceMesh).setWeightAttribute("color").build();
     let _position = new THREE.Vector3();
     for (let i = 0; i < this.MAX_PARTICLES; i++) {
       this.sampler.sample(_position);
@@ -166,9 +168,9 @@ class particleObject {
     // this.particles.geometry.dispose();
     // this.particles.material.dispose();
     // this.particles.removeFromParent();
-    this.surfaceMesh.geometry.dispose();
-    this.surfaceMesh.material.dispose();
-    this.surfaceMesh.removeFromParent();
+    // this.surfaceMesh.geometry.dispose();
+    // this.surfaceMesh.material.dispose();
+    // this.surfaceMesh.removeFromParent();
     this.ready = true;
   }
 
@@ -220,13 +222,6 @@ class particleObject {
     this.particles.position.y += 0.1 * Math.sin(performance.now() * speed * 0.0001);
   }
 
-  setScale(sc) {
-    this.scale = sc;
-    this.objectContainer.scale.x = sc;
-    this.objectContainer.scale.y = sc;
-    this.objectContainer.scale.z = sc;
-  }
-
   setPosition(vec) {
     this.position = vec;
     this.objectContainer.position.x = vec.x;
@@ -239,6 +234,13 @@ class particleObject {
     this.objectContainer.rotation.x = vec.x;
     this.objectContainer.rotation.y = vec.y;
     this.objectContainer.rotation.z = vec.z;
+  }
+
+  setScale(vec) {
+    this.scale = vec;
+    this.objectContainer.scale.x = vec.x;
+    this.objectContainer.scale.y = vec.y;
+    this.objectContainer.scale.z = vec.z;
   }
 
   showMe() {
@@ -289,6 +291,10 @@ class particleObject {
         let rotVec = new THREE.Vector3();
         rotVec.lerpVectors(this.startRotation, this.targetRotation, p);
         if (p <= 1) this.setRotation(rotVec);
+
+        let scaleVec = new THREE.Vector3();
+        scaleVec.lerpVectors(this.startScale, this.targetScale, p);
+        if (p <= 1) this.setScale(scaleVec);
 
         this.uniformsValues["time"].value = performance.now() * this.particleParams.wobbleSpeed;
         this.uniformsValues["resolution"].value = new THREE.Vector2(window.innerWidth, window.innerHeight);

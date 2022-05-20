@@ -11,7 +11,9 @@
     "startPosition": [7.43, 8.57, -15],
     "targetPosition": [5.8, -10, -2],
     "startRotation": [-0.45, 0.06, 0],
-    "targetRotation": [0.77, -2.7, 0]
+    "targetRotation": [0.77, -2.7, 0],
+    "animStart": 0,
+    "animStop": 1
   },
   "sceneObjs": [
     {
@@ -29,8 +31,8 @@
       "targetPosition": [0, -20, 0],
       "startRotation": [0, 3.14, 0],
       "targetRotation": [0, 3.14, 0],
-      "startScale": 1,
-      "targetScale": 1,
+      "startScale": [1, 1, 1],
+      "targetScale": [1, 1, 1],
       "objWobbleAmp": 0,
       "objWobbleSpeed": 0,
       "show": true,
@@ -54,8 +56,8 @@
       "targetPosition": [0, 0, 0],
       "startRotation": [0, 0, 0],
       "targetRotation": [0, 0, 0],
-      "startScale": 0.1,
-      "targetScale": 0.1,
+      "startScale": [0.1, 0.1, 0.1],
+      "targetScale": [0.1, 0.1, 0.1],
       "objWobbleAmp": 0,
       "objWobbleSpeed": 0,
       "show": false,
@@ -79,8 +81,8 @@
       "targetPosition": [0, 0, 0],
       "startRotation": [0, 0, 0],
       "targetRotation": [0, 0, 0],
-      "startScale": 0.1,
-      "targetScale": 0.1,
+      "startScale": [0.1, 0.1, 0.1],
+      "targetScale": [0.1, 0.1, 0.1],
       "objWobbleAmp": 0,
       "objWobbleSpeed": 0,
       "show": false,

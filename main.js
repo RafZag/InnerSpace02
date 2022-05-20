@@ -6,11 +6,12 @@ import { RenderPass } from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/p
 import { ShaderPass } from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/postprocessing/ShaderPass.js";
 import { GUI } from "https://cdn.skypack.dev/three@0.137.0/examples/jsm/libs/lil-gui.module.min.js";
 import Stats from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/libs/stats.module.js";
-import { storyStage } from "./covidStory/storyStage.js";
+import { storyStage } from "./js/storyStage.js";
 import { storyStage03 } from "./covidStory/storyStage03.js";
 import { TiltShiftShader } from "./shaders/TiltShiftShader.js";
 import { VignetteShader } from "./shaders/VignetteShader.js";
 import { transitionParticles } from "./js/transitionParticles.js";
+import Event from "./libs/Events.js";
 
 ///////////////////////////// BROWSER CHECK
 
@@ -29,6 +30,7 @@ let currentStage;
 let currentStageNo = 0;
 let nextStageNo = 1;
 let stageList = [];
+let readyScenesCount = 0;
 let nextStage;
 let animationProgress = 0;
 let transParticles;
@@ -48,7 +50,11 @@ let camTargetRotY = 0;
 let msgDiv = document.getElementById("msg");
 let editDiv = document.getElementById("edit");
 let frameDiv = document.getElementById("frame");
-let loader = document.getElementById("loader");
+// let loader = document.getElementById("loader");
+
+const events = new Event();
+
+let canvas;
 
 let camPosition = new THREE.Vector3(0, 0, 60);
 let vignetteColor = new THREE.Color(0xcad3da);
@@ -142,7 +148,7 @@ function init() {
 
   //---------------- Render --------------------------
 
-  const canvas = document.querySelector("#c");
+  canvas = document.querySelector("#c");
   renderer = new THREE.WebGLRenderer({ canvas, antyalias: true, alpha: true });
 
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -175,6 +181,10 @@ function init() {
   // controls.enableDamping = true;
 
   //---------------------- Listeners -----------------
+
+  events.bind(canvas, "loadProgerssEvent", function (event) {
+    console.log(event.detail.percent);
+  });
 
   window.addEventListener("resize", onWindowResize);
   document.addEventListener("mousemove", onDocumentMouseMove, false);
@@ -242,7 +252,6 @@ function init() {
   vignettePass.uniforms["darkness"].value = params.vignetteDarkness;
 
   // console.log(renderer.info);
-
 }
 
 //---------------- Animate --------------------------
@@ -260,16 +269,35 @@ function animate(time) {
   //   if (readyNo == stageList.length) {
   //     allStagesReady = true;
   //     console.log("All ready!");
-  //   }    
+  //   }
   // }
-  currentStage.readyCheck();
-  if(currentStage.ready) loader.style.visibility = "hidden";
 
-  if (currentStage.ready && !currentStage.visible) currentStage.show();
+  readyScenesCount = 0;
+  if (!allStagesReady) {
+    let proc = 0;
+    for (let i = 0; i < stageList.length; i++) {
+      proc += stageList[i].readyCheck();
+      // console.log(proc);
+      if (stageList[i].ready) {
+        readyScenesCount++;
+      }
+    }
+    if (readyScenesCount >= stageList.length) allStagesReady = true;
+    proc = (proc * 100) / stageList.length;
+    if (!proc) proc = 0;
+    // loader.innerText = proc.toFixed() + "%";
+    events.fire(canvas, "loadProgerssEvent", {
+      percent: proc.toFixed(),
+    });
+  }
+
+  // if (allStagesReady) loader.style.visibility = "hidden";
+
+  if (allStagesReady && !currentStage.visible) currentStage.show();
   if (!editMode) {
     camera.rotation.x += (camTargetRotX - camera.rotation.x) * 0.03;
     camera.rotation.y += (camTargetRotY - camera.rotation.y) * 0.03;
-    if (currentStage.ready && !transition) currentStage.update(animationProgress);
+    if (allStagesReady && !transition) currentStage.update(animationProgress);
   }
 
   if (editMode) displaySceneCoords();
