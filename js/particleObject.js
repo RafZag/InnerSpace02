@@ -17,6 +17,9 @@ class particleObject {
   scale = new THREE.Vector3();
   startScale = new THREE.Vector3();
   targetScale = new THREE.Vector3();
+  color;
+  startColor;
+  targetColor;
   showPercent = 0;
   showStep = 0.01;
   showRangeStrat = 0;
@@ -49,7 +52,6 @@ class particleObject {
   uniformsValues;
 
   particleParams = {
-    particleColor: 0x4fcfae,
     particleCount: 20000,
     particleCntMult: 65,
     particleSize: 0.2,
@@ -67,13 +69,14 @@ class particleObject {
 
   constructor(parentContainer, model, col) {
     this.parentContainer = parentContainer;
-    this.particleParams.particleColor = new THREE.Color(col);
+    this.color = new THREE.Color(col);
+    this.targetColor = new THREE.Color(0xff0000);
     this.modelURL = model;
     // this.buildParticles();
   }
 
   buildParticles() {
-    const pc = new THREE.Color(this.particleParams.particleColor);
+    const pc = new THREE.Color(this.color);
 
     for (let j = 0; j < this.MAX_PARTICLES; j++) {
       this.vertices.push(0, 0, 0);
@@ -91,6 +94,7 @@ class particleObject {
 
     this.uniformsValues = {
       rimColor: { value: new THREE.Color("rgb(255, 255, 255)") },
+      partColor: { value: new THREE.Color(this.color) },
       time: { value: 0.0 },
       wobble: { value: this.particleParams.particlesWobble },
       wobbleSpeed: { value: this.particleParams.particlesWobble },
@@ -205,14 +209,17 @@ class particleObject {
   }
 
   changeColor(col) {
-    let c = new THREE.Color(col);
-    const cols = this.geometry.attributes.color.array;
-    for (let i = 0; i < this.geometry.attributes.size.array.length; i++) {
-      cols[i * 3] = c.r;
-      cols[i * 3 + 1] = c.g;
-      cols[i * 3 + 2] = c.b;
-    }
-    this.geometry.attributes.color.needsUpdate = true;
+    this.color = col;
+    this.uniformsValues["partColor"].value = col;
+    this.uniformsValues.needsUpdate = true;
+    // let c = new THREE.Color(col);
+    // const cols = this.geometry.attributes.color.array;
+    // for (let i = 0; i < this.geometry.attributes.size.array.length; i++) {
+    //   cols[i * 3] = c.r;
+    //   cols[i * 3 + 1] = c.g;
+    //   cols[i * 3 + 2] = c.b;
+    // }
+    // this.geometry.attributes.color.needsUpdate = true;
   }
 
   spin(speed) {
@@ -267,6 +274,14 @@ class particleObject {
     return ((value - x1) * (y2 - x2)) / (y1 - x1) + x2;
   }
 
+  easeInOutCubic(x) {
+    return x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
+  }
+
+  easeOutSine(x) {
+    return Math.sin((x * Math.PI) / 2);
+  }
+
   update(progress) {
     if (this.ready) {
       if (progress >= this.showRangeStrat && progress <= this.showRangeEnd) this.show = true;
@@ -278,23 +293,28 @@ class particleObject {
       if (this.visible) {
         let p;
 
-        // const p = this.mapValue(progress, this.animStart, this.animStop, 0, 1);
         if (progress >= this.animStart && progress <= this.animStop) {
           p = (progress - this.animStart) / (this.animStop - this.animStart);
         }
 
+        p = this.easeOutSine(p);
+
         let posVec = new THREE.Vector3();
         posVec.lerpVectors(this.startPosition, this.targetPosition, p);
-        if (p <= 1) this.setPosition(posVec);
+        if (p <= 1 && p != undefined) this.setPosition(posVec);
         // if (p == 1) this.setPosition(this.targetPosition);
 
         let rotVec = new THREE.Vector3();
         rotVec.lerpVectors(this.startRotation, this.targetRotation, p);
-        if (p <= 1) this.setRotation(rotVec);
+        if (p <= 1 && p != undefined) this.setRotation(rotVec);
 
         let scaleVec = new THREE.Vector3();
         scaleVec.lerpVectors(this.startScale, this.targetScale, p);
-        if (p <= 1) this.setScale(scaleVec);
+        if (p <= 1 && p != undefined) this.setScale(scaleVec);
+
+        let colorTrans = new THREE.Color();
+        colorTrans.lerpColors(this.startColor, this.targetColor, p);
+        if (p <= 1 && p != undefined) this.changeColor(colorTrans);
 
         this.uniformsValues["time"].value = performance.now() * this.particleParams.wobbleSpeed;
         this.uniformsValues["resolution"].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
