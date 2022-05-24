@@ -82,6 +82,8 @@ class storyStage {
         }
 
         const tmpObj = new particleObject(tmpParent, window.CANVAS_ASSET_ROOT + item.gltfFile, this.colorPallete[item.color]);
+        tmpObj.startColor = tmpObj.color;
+        tmpObj.targetColor = new THREE.Color(this.colorPallete[item.targetcolor]);
         tmpObj.name = item.name;
         tmpObj.particleParams.particleCount = item.particleCount;
         tmpObj.particleParams.particleSize = item.particleSize;
@@ -92,6 +94,7 @@ class storyStage {
         tmpObj.particleParams.surfaceNoiseSpeed = item.surfaceNoiseSpeed;
         tmpObj.objWobbleAmp = item.objWobbleAmp;
         tmpObj.objWobbleSpeed = item.objWobbleSpeed;
+
         tmpObj.buildParticles();
         tmpParent.add(tmpObj.objectContainer);
         tmpObj.setScale(new THREE.Vector3().fromArray(item.startScale));
@@ -140,6 +143,7 @@ class storyStage {
       this.sceneObjects[i].setPosition(this.sceneObjects[i].startPosition);
       this.sceneObjects[i].setRotation(this.sceneObjects[i].startRotation);
       this.sceneObjects[i].setScale(this.sceneObjects[i].startScale);
+      this.sceneObjects[i].changeColor(this.sceneObjects[i].startColor);
     }
     this.complete = false;
   }
@@ -162,6 +166,10 @@ class storyStage {
     }
   }
 
+  easeOutSine(x) {
+    return Math.sin((x * Math.PI) / 2);
+  }
+
   update(animProgress) {
     if (this.visible) {
       this.ambParticles.update();
@@ -173,6 +181,8 @@ class storyStage {
       p = Math.abs((animProgress - this.animStart) / (this.animStop - this.animStart));
       if (p >= 1) p = 1;
       // }
+
+      p = this.easeOutSine(p);
 
       let posVec = new THREE.Vector3();
       posVec.lerpVectors(this.startPosition, this.targetPosition, p);

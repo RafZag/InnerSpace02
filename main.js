@@ -100,8 +100,8 @@ const params = {
 };
 
 function startAnim() {
-  if (!currentStage.complete) animateTween.to({ animTween: 1 }, currentStage.duration).start();
-  else sceneTransition();
+  if (animationProgress == 0) animateTween.to({ animTween: 1 }, currentStage.duration).start();
+  if (currentStage.complete && !transition) sceneTransition();
 }
 
 function changeBG() {
@@ -188,7 +188,7 @@ function init() {
   events.fire(canvas, "canvas:loading", {
     percent: 100,
   });
-  events.fire(canvas, "canvas:canvas:loaded", {
+  events.fire(canvas, "canvas:loaded", {
     percent: 100,
   });
 
@@ -384,7 +384,7 @@ function sceneTransition() {
   // }, 2000);
 
   let transInTween = new TWEEN.Tween(params)
-    .to({ transTween: 1 }, 400)
+    .to({ transTween: 1 }, 200)
     .easing(TWEEN.Easing.Quadratic.Out)
     .onComplete(() => {
       transition = false;
@@ -395,7 +395,7 @@ function sceneTransition() {
     });
 
   let transOutTween = new TWEEN.Tween(params)
-    .to({ transTween: 1 }, 1000)
+    .to({ transTween: 1 }, 500)
     .easing(TWEEN.Easing.Quadratic.In)
     .onComplete(() => {
       switchScene();

@@ -12,7 +12,7 @@ const particleVertexShader = /*glsl*/ `
   uniform float objWobbleSpeed;
   uniform vec2 resolution;
   attribute float size;
-  varying vec3 vColor;
+  // varying vec3 vColor;
   varying float dist;
 
 
@@ -151,7 +151,7 @@ float cnoise(vec3 P)
   }
 
   void main() {
-    vColor = color;
+    // vColor = color;
     vec4 mvPosition = modelViewMatrix * vec4( position, 1.0 );
 
     float w = cnoise(vec3(position.x / surfaceNoiseScale, position.y / surfaceNoiseScale + time * surfaceNoiseSpeed, position.z / surfaceNoiseScale));
