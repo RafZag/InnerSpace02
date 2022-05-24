@@ -188,7 +188,7 @@ function init() {
   events.fire(canvas, "canvas:loading", {
     percent: 100,
   });
-  events.fire(canvas, "canvas:canvas:loaded", {
+  events.fire(canvas, "canvas:loaded", {
     percent: 100,
   });
 
@@ -293,7 +293,7 @@ function animate(time) {
       percent: proc.toFixed(),
     });
     if (readyScenesCount >= stageList.length) {
-      events.fire(canvas, "canvas:loaded", {
+      events.fire(canvas, "canvas:scene-loaded", {
         percent: proc.toFixed(),
       });
       allStagesReady = true;
