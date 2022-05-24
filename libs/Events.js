@@ -93,7 +93,7 @@ export default class {
    * });
    */
   on(parent, eventName, childSelector, callback) {
-    parent.addEventListener(eventName, function (event) {
+    parent.addEventListener(eventName, function(event) {
       const clickedElement = event.target,
         matchingChild = clickedElement.closest(childSelector);
 
