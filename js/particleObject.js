@@ -1,9 +1,9 @@
 /* eslint-disable */
-import * as THREE from "https://cdn.skypack.dev/three@0.132.0/build/three.module.js";
-import { GLTFLoader } from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/loaders/GLTFLoader.js";
-import { MeshSurfaceSampler } from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/math/MeshSurfaceSampler.js";
-import particleVertexShader from "../shaders/particleVertexShader.js";
-import particleFragmentShader from "../shaders/particleFragmentShader.js";
+import * as THREE from 'https://cdn.skypack.dev/three@0.132.0/build/three.module.js';
+import { GLTFLoader } from 'https://cdn.skypack.dev/three@0.132.0/examples/jsm/loaders/GLTFLoader.js';
+import { MeshSurfaceSampler } from 'https://cdn.skypack.dev/three@0.132.0/examples/jsm/math/MeshSurfaceSampler.js';
+import particleVertexShader from '../shaders/particleVertexShader.js';
+import particleFragmentShader from '../shaders/particleFragmentShader.js';
 
 class particleObject {
   objectContainer = new THREE.Object3D();
@@ -78,23 +78,26 @@ class particleObject {
   buildParticles() {
     const pc = new THREE.Color(this.color);
 
-    for (let j = 0; j < this.MAX_PARTICLES; j++) {
-      this.vertices.push(0, 0, 0);
-      this.partColors.push(pc.r, pc.g, pc.b);
-      this.sizes.push(this.particleParams.particleSize);
-    }
+    // for (let j = 0; j < this.MAX_PARTICLES; j++) {
+    //   this.vertices.push(0, 0, 0);
+    //   // this.partColors.push(pc.r, pc.g, pc.b);
+    //   // this.sizes.push(this.particleParams.particleSize);
+    // }
 
-    this.geometry.setAttribute("color", new THREE.Float32BufferAttribute(this.partColors, 3));
-    this.geometry.setAttribute("position", new THREE.Float32BufferAttribute(this.vertices, 3));
-    this.geometry.setAttribute("size", new THREE.Float32BufferAttribute(this.sizes, 1).setUsage(THREE.DynamicDrawUsage));
+    // this.geometry.setAttribute('color', new THREE.Float32BufferAttribute(this.partColors, 3));
+    this.geometry.setAttribute('position', new THREE.Float32BufferAttribute(this.MAX_PARTICLES, 3));
+    // this.geometry.setAttribute('size', new THREE.Float32BufferAttribute(this.sizes, 1).setUsage(THREE.DynamicDrawUsage));
+
+    // this.vertices.length = 0;
 
     this.geometry.setDrawRange(0, this.particleParams.particleCount);
 
     this.objWobbleDir = new THREE.Vector3(Math.random(), Math.random(), Math.random());
 
     this.uniformsValues = {
-      rimColor: { value: new THREE.Color("rgb(255, 255, 255)") },
+      rimColor: { value: new THREE.Color('rgb(255, 255, 255)') },
       partColor: { value: new THREE.Color(this.color) },
+      size: { value: this.particleParams.particleSize },
       time: { value: 0.0 },
       wobble: { value: this.particleParams.particlesWobble },
       wobbleSpeed: { value: this.particleParams.particlesWobble },
@@ -141,13 +144,13 @@ class particleObject {
         this.loadedProc = xhr.loaded / xhr.total;
       }.bind(this),
       function (error) {
-        console.log("An error happened " + error);
+        console.log('An error happened ' + error);
       }
     );
   }
 
   sampleSurface() {
-    this.sampler = new MeshSurfaceSampler(this.surfaceMesh).setWeightAttribute("color").build();
+    this.sampler = new MeshSurfaceSampler(this.surfaceMesh).setWeightAttribute('color').build();
     let _position = new THREE.Vector3();
     for (let i = 0; i < this.MAX_PARTICLES; i++) {
       this.sampler.sample(_position);
@@ -176,6 +179,7 @@ class particleObject {
     // this.surfaceMesh.material.dispose();
     // this.surfaceMesh.removeFromParent();
     this.ready = true;
+    this.surfaceVerts.length = 0;
   }
 
   resample(n) {
@@ -183,13 +187,13 @@ class particleObject {
     // this.geometry.attributes.position.needsUpdate = true;
   }
 
-  zoomResample(cam) {
-    const dist = this.particles.position.distanceTo(cam.position);
-    this.particleParams.particleCount = (this.MAX_PARTICLES * this.particleParams.particleCntMult) / (dist * dist);
-    this.resample();
-    this.particleParams.particleSize = (this.MAX_SIZE * dist) / 500;
-    this.changeParticleSize();
-  }
+  // zoomResample(cam) {
+  //   const dist = this.particles.position.distanceTo(cam.position);
+  //   this.particleParams.particleCount = (this.MAX_PARTICLES * this.particleParams.particleCntMult) / (dist * dist);
+  //   this.resample();
+  //   this.particleParams.particleSize = (this.MAX_SIZE * dist) / 500;
+  //   this.changeParticleSize();
+  // }
 
   changeParticleSize() {
     let viewportSurfaceArea = window.innerWidth * window.innerHeight * 0.000001;
@@ -204,13 +208,13 @@ class particleObject {
   }
 
   changeRimColor(col) {
-    this.uniformsValues["rimColor"].value = col;
+    this.uniformsValues['rimColor'].value = col;
     this.uniformsValues.needsUpdate = true;
   }
 
   changeColor(col) {
     this.color = col;
-    this.uniformsValues["partColor"].value = col;
+    this.uniformsValues['partColor'].value = col;
     this.uniformsValues.needsUpdate = true;
     // let c = new THREE.Color(col);
     // const cols = this.geometry.attributes.color.array;
@@ -256,7 +260,7 @@ class particleObject {
       let n = Math.ceil(this.particleParams.particleCount * this.showPercent);
       this.resample(n);
       if (n >= this.particleParams.particleCount) this.visible = true;
-      this.uniformsValues["time"].value = performance.now() * this.particleParams.wobbleSpeed;
+      this.uniformsValues['time'].value = performance.now() * this.particleParams.wobbleSpeed;
       this.uniformsValues.needsUpdate = true;
     }
   }
@@ -316,8 +320,8 @@ class particleObject {
         colorTrans.lerpColors(this.startColor, this.targetColor, p);
         if (p <= 1 && p != undefined) this.changeColor(colorTrans);
 
-        this.uniformsValues["time"].value = performance.now() * this.particleParams.wobbleSpeed;
-        this.uniformsValues["resolution"].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
+        this.uniformsValues['time'].value = performance.now() * this.particleParams.wobbleSpeed;
+        this.uniformsValues['resolution'].value = new THREE.Vector2(window.innerWidth, window.innerHeight);
         this.uniformsValues.needsUpdate = true;
       }
     }
