@@ -38,7 +38,7 @@
       "objWobbleSpeed": 0,
       "show": true,
       "showRangeStrat": 0,
-      "showRangeEnd": 1,
+      "showRangeEnd": 0.4,
       "animStart": 0,
       "animStop": 1
     },

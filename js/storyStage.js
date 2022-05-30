@@ -1,7 +1,7 @@
 /* eslint-disable */
-import * as THREE from "https://cdn.skypack.dev/three@0.132.0/build/three.module.js";
-import { particleObject } from "./particleObject.js";
-import { ambientParticles } from "./ambientParticles.js";
+import * as THREE from 'https://cdn.skypack.dev/three@0.132.0/build/three.module.js';
+import { particleObject } from './particleObject.js';
+import { ambientParticles } from './ambientParticles.js';
 
 class storyStage {
   name;
@@ -11,7 +11,6 @@ class storyStage {
   targetPosition = new THREE.Vector3();
   startRotation = new THREE.Vector3();
   targetRotation = new THREE.Vector3();
-  camera;
   duration;
   animStart;
   animStop;
@@ -36,10 +35,9 @@ class storyStage {
 
   colorPallete = [0x74d5a7, 0x92c846, 0x00916c, 0x4fcfae, 0x84d6cd, 0x9ce5f0, 0xe1e9f1];
 
-  constructor(cont, cam, data) {
+  constructor(cont, data) {
     this.parentContainer = cont;
     this.dataUrl = data;
-    this.camera = cam;
     this.loadJSON();
   }
 
@@ -63,7 +61,6 @@ class storyStage {
 
     this.animStart = this.loadedData.stageContainer.animStart;
     this.animStop = this.loadedData.stageContainer.animStop;
-    // this.camera.position.z = this.loadedData.camera.start.z;
 
     this.startPosition.fromArray(this.loadedData.stageContainer.startPosition);
     this.targetPosition.fromArray(this.loadedData.stageContainer.targetPosition);
@@ -126,12 +123,19 @@ class storyStage {
   show() {
     this.stageContainer.visible = true;
     this.visible = true;
-    // console.log("show scene: " + this.name);
+    this.ambParticles.particles.visible = true;
+    this.sceneObjects.forEach((obj) => {
+      obj.showMe();
+    });
   }
 
   hide() {
-    this.stageContainer.visible = false;
-    this.visible = false;
+    this.sceneObjects.forEach((obj) => {
+      obj.hideMe();
+    });
+    this.ambParticles.particles.visible = false;
+    // this.stageContainer.visible = false;
+    // this.visible = false;
     // console.log("hide scene: " + this.name);
   }
 
@@ -139,12 +143,12 @@ class storyStage {
     this.stageContainer.position.set(this.startPosition.x, this.startPosition.y, this.startPosition.z);
     this.stageContainer.rotation.set(this.startRotation.x, this.startRotation.y, this.startRotation.z);
 
-    for (let i = 0; i < this.sceneObjects.length; i++) {
-      this.sceneObjects[i].setPosition(this.sceneObjects[i].startPosition);
-      this.sceneObjects[i].setRotation(this.sceneObjects[i].startRotation);
-      this.sceneObjects[i].setScale(this.sceneObjects[i].startScale);
-      this.sceneObjects[i].changeColor(this.sceneObjects[i].startColor);
-    }
+    this.sceneObjects.forEach((obj) => {
+      obj.setPosition(obj.startPosition);
+      obj.setRotation(obj.startRotation);
+      obj.setScale(obj.startScale);
+      obj.changeColor(obj.startColor);
+    });
     this.complete = false;
   }
 
@@ -152,12 +156,12 @@ class storyStage {
     if (this.sceneObjects.length > 0) {
       let n = 0;
       let proc = 0;
-      for (let i = 0; i < this.sceneObjects.length; i++) {
-        proc += this.sceneObjects[i].loadedProc;
-        if (this.sceneObjects[i].ready) {
+      this.sceneObjects.forEach((obj) => {
+        proc += obj.loadedProc;
+        if (obj.ready) {
           n++;
         }
-      }
+      });
       if (n >= this.sceneObjects.length) {
         this.ready = true;
         return 1;
@@ -172,12 +176,9 @@ class storyStage {
 
   update(animProgress) {
     if (this.visible) {
-      this.ambParticles.update();
-
       if (animProgress >= 1) animProgress = 1;
 
       let p;
-      // if (animProgress >= this.animStart && animProgress <= this.animStop) {
       p = Math.abs((animProgress - this.animStart) / (this.animStop - this.animStart));
       if (p >= 1) p = 1;
       // }

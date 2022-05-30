@@ -1,17 +1,16 @@
 /* eslint-disable */
-import * as THREE from "https://cdn.skypack.dev/three@0.132.0/build/three.module.js";
-// import { OrbitControls } from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/controls/OrbitControls.js";
-import { EffectComposer } from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/postprocessing/EffectComposer.js";
-import { RenderPass } from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/postprocessing/RenderPass.js";
-import { ShaderPass } from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/postprocessing/ShaderPass.js";
-import { GUI } from "https://cdn.skypack.dev/three@0.137.0/examples/jsm/libs/lil-gui.module.min.js";
-import Stats from "https://cdn.skypack.dev/three@0.132.0/examples/jsm/libs/stats.module.js";
-import { storyStage } from "./js/storyStage.js";
-import { storyStage03 } from "./covidStory/storyStage03.js";
-import { TiltShiftShader } from "./shaders/TiltShiftShader.js";
-import { VignetteShader } from "./shaders/VignetteShader.js";
-import { transitionParticles } from "./js/transitionParticles.js";
-import Event from "./libs/Events.js";
+import * as THREE from 'https://cdn.skypack.dev/three@0.132.0/build/three.module.js';
+import { EffectComposer } from 'https://cdn.skypack.dev/three@0.132.0/examples/jsm/postprocessing/EffectComposer.js';
+import { RenderPass } from 'https://cdn.skypack.dev/three@0.132.0/examples/jsm/postprocessing/RenderPass.js';
+import { ShaderPass } from 'https://cdn.skypack.dev/three@0.132.0/examples/jsm/postprocessing/ShaderPass.js';
+import { GUI } from 'https://cdn.skypack.dev/three@0.137.0/examples/jsm/libs/lil-gui.module.min.js';
+import Stats from 'https://cdn.skypack.dev/three@0.132.0/examples/jsm/libs/stats.module.js';
+import { story } from './js/story.js';
+import { introStory } from './intro/introStory.js';
+import { TiltShiftShader } from './shaders/TiltShiftShader.js';
+import { VignetteShader } from './shaders/VignetteShader.js';
+import { transitionParticles } from './js/transitionParticles.js';
+import Event from './libs/Events.js';
 
 ///////////////////////////// BROWSER CHECK
 
@@ -25,64 +24,52 @@ if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(naviga
 }
 
 let camera, scene, renderer, stats, composer, effectPass, vignettePass;
-// let controls;
-let currentStage;
-let currentStageNo = 0;
-let nextStageNo = 1;
-let stageList = [];
-let readyScenesCount = 0;
-let nextStage;
-let animationProgress = 0;
+
+let currentStory;
+let intro;
+let storyList = [];
+
 let transParticles;
 
 let darkMode = false;
 let editMode = false;
 let editFrame = 0;
-let transition = false;
 let rightButtonDown = false;
 let leftButtonDown = false;
-let allStagesReady = false;
 
 let mouse = new THREE.Vector3(0, 0, 0.5);
 let camTargetRotX = 0;
 let camTargetRotY = 0;
 
-let msgDiv = document.getElementById("msg");
-let editDiv = document.getElementById("edit");
-let frameDiv = document.getElementById("frame");
-// let loader = document.getElementById("loader");
+let msgDiv = document.getElementById('msg');
+let editDiv = document.getElementById('edit');
+let frameDiv = document.getElementById('frame');
+// let loader = document.getElementById('loader');
 
 const events = new Event();
-
 let canvas;
 
 let camPosition = new THREE.Vector3(0, 0, 60);
 let vignetteColor = new THREE.Color(0xcad3da);
 
-const tween = eval("TWEEN.Easing.Quadratic.InOut");
-
 const params = {
   editMode: function () {
     editMode = !editMode;
-    // controls.enabled = editMode;
-    // if (!editMode) camera.position.copy(camPosition);
     if (editMode) {
-      editDiv.style.visibility = "visible";
-      frameDiv.style.visibility = "visible";
-      frameDiv.innerHTML = "start frame";
+      editDiv.style.visibility = 'visible';
+      frameDiv.style.visibility = 'visible';
+      frameDiv.innerHTML = 'start frame';
       editFrame = 0;
-      animationProgress = 0;
-      currentStage.update(editFrame);
+      currentStory.animationProgress = 0;
+      currentStory.currentStage.update(editFrame);
     } else {
-      editDiv.style.visibility = "hidden";
-      frameDiv.style.visibility = "hidden";
-      animationProgress = 0;
-      currentStage.update(animationProgress);
+      editDiv.style.visibility = 'hidden';
+      frameDiv.style.visibility = 'hidden';
+      currentStory.animationProgress = 0;
+      currentStory.currentStage.update(currentStory.animationProgress);
     }
   },
   camRot: 0.1,
-  sizeMult: 0.44,
-  countMult: 65,
   backgroundColor: 0xdfe9f2,
   darkBackground: 0x000000,
   bluramount: 0.6,
@@ -93,42 +80,24 @@ const params = {
     changeBG();
   },
   animate: function () {
-    startAnim();
+    currentStory.startAnim();
   },
-  animTween: 0,
-  transTween: 0,
 };
-
-function startAnim() {
-  if (animationProgress == 0) animateTween.to({ animTween: 1 }, currentStage.duration).start();
-  if (currentStage.complete && !transition) sceneTransition();
-}
 
 function changeBG() {
   darkMode = !darkMode;
   if (darkMode) {
-    for (let i = 0; i < currentStage.sceneObjects.length; i++) {
-      currentStage.sceneObjects[i].changeRimColor(new THREE.Color(params.darkBackground));
+    for (let i = 0; i < currentStory.currentStage.sceneObjects.length; i++) {
+      currentStory.currentStage.sceneObjects[i].changeRimColor(new THREE.Color(params.darkBackground));
     }
     renderer.setClearColor(params.darkBackground);
   } else {
-    for (let i = 0; i < currentStage.sceneObjects.length; i++) {
-      currentStage.sceneObjects[i].changeRimColor(new THREE.Color(0xffffff));
+    for (let i = 0; i < currentStory.currentStage.sceneObjects.length; i++) {
+      currentStory.currentStage.sceneObjects[i].changeRimColor(new THREE.Color(0xffffff));
     }
     renderer.setClearColor(new THREE.Color());
   }
 }
-
-let animateTween = new TWEEN.Tween(params)
-  .to({ animTween: 1 })
-  .easing(tween)
-  .onComplete(() => {
-    // editMode = true;
-    currentStage.complete = true;
-  })
-  .onUpdate(() => {
-    animationProgress = params.animTween;
-  });
 
 /////////////////////// RAYCASTER
 
@@ -148,7 +117,7 @@ function init() {
 
   //---------------- Render --------------------------
 
-  canvas = document.querySelector("#c");
+  canvas = document.querySelector('#c');
   renderer = new THREE.WebGLRenderer({ canvas, antyalias: true, alpha: true });
 
   renderer.setPixelRatio(window.devicePixelRatio);
@@ -164,53 +133,35 @@ function init() {
   composer.addPass(new RenderPass(scene, camera));
 
   effectPass = new ShaderPass(TiltShiftShader);
-  effectPass.uniforms["bluramount"].value = params.bluramount;
-  effectPass.uniforms["center"].value = params.center;
+  effectPass.uniforms['bluramount'].value = params.bluramount;
+  effectPass.uniforms['center'].value = params.center;
 
   vignettePass = new ShaderPass(VignetteShader);
-  vignettePass.uniforms["color"].value = [vignetteColor.r, vignetteColor.g, vignetteColor.b];
+  vignettePass.uniforms['color'].value = [vignetteColor.r, vignetteColor.g, vignetteColor.b];
 
   composer.addPass(effectPass);
   composer.addPass(vignettePass);
 
-  //---------------- Controls --------------------------
-
-  // controls = new OrbitControls(camera, renderer.domElement);
-  // controls.enabled = editMode;
-  // // controls.target = new THREE.Vector3(0, 18, 0);
-  // controls.enableDamping = true;
-
-  // --------------- Canvas events --------------------
-
-  events.fire(canvas, "canvas:loading", {
-    percent: 0,
-  });
-  events.fire(canvas, "canvas:loading", {
-    percent: 100,
-  });
-  events.fire(canvas, "canvas:loaded", {
-    percent: 100,
-  });
-
   //---------------------- Listeners -----------------
 
-  // events.bind(canvas, "canvas:scene-loading", function (event) {
-  //   console.log(event.detail.percent);
+  // events.bind(canvas, 'canvas:loading', function (event) {
+  //   loader.innerText = event.detail.percent + '%';
   // });
 
-  // events.bind(canvas, "canvas:scene-loaded", function (event) {
+  // events.bind(canvas, 'canvas:loaded', function (event) {
+  //   loader.style.visibility = 'hidden';
   //   console.log(event.type);
   // });
 
-  window.addEventListener("resize", onWindowResize);
-  document.addEventListener("mousemove", onDocumentMouseMove, false);
-  document.addEventListener("wheel", onDocumentWheel, false);
-  document.addEventListener("click", onDocumentClick, false);
-  document.addEventListener("keydown", onDocumentKeyDown);
-  document.addEventListener("mousedown", onDocumentMouseDown);
-  document.addEventListener("mouseup", onDocumentMouseUp);
+  window.addEventListener('resize', onWindowResize);
+  document.addEventListener('mousemove', onDocumentMouseMove, false);
+  document.addEventListener('wheel', onDocumentWheel, false);
+  document.addEventListener('click', onDocumentClick, false);
+  document.addEventListener('keydown', onDocumentKeyDown);
+  document.addEventListener('mousedown', onDocumentMouseDown);
+  document.addEventListener('mouseup', onDocumentMouseUp);
 
-  document.addEventListener("contextmenu", (e) => {
+  document.addEventListener('contextmenu', (e) => {
     e.preventDefault();
     return false;
   });
@@ -221,25 +172,25 @@ function init() {
   document.body.appendChild(stats.dom);
 
   const gui = new GUI();
-  gui.add(params, "editMode");
-  const tiltFolder = gui.addFolder("TiltShift");
-  tiltFolder.add(params, "bluramount", 0, 5.0, 0.01).onChange(() => {
-    effectPass.uniforms["bluramount"].value = params.bluramount;
+  gui.add(params, 'editMode');
+  const tiltFolder = gui.addFolder('TiltShift');
+  tiltFolder.add(params, 'bluramount', 0, 5.0, 0.01).onChange(() => {
+    effectPass.uniforms['bluramount'].value = params.bluramount;
   });
-  tiltFolder.add(params, "center", 0.1, 2, 0.01).onChange(() => {
-    effectPass.uniforms["center"].value = params.center;
+  tiltFolder.add(params, 'center', 0.1, 2, 0.01).onChange(() => {
+    effectPass.uniforms['center'].value = params.center;
   });
   tiltFolder.close();
-  const vignFolder = gui.addFolder("Vignette");
-  vignFolder.add(params, "vignetteOffset", 0, 2.0, 0.01).onChange(() => {
-    vignettePass.uniforms["offset"].value = params.vignetteOffset;
+  const vignFolder = gui.addFolder('Vignette');
+  vignFolder.add(params, 'vignetteOffset', 0, 2.0, 0.01).onChange(() => {
+    vignettePass.uniforms['offset'].value = params.vignetteOffset;
   });
-  vignFolder.add(params, "vignetteDarkness", 0, 1, 0.01).onChange(() => {
-    vignettePass.uniforms["darkness"].value = params.vignetteDarkness;
+  vignFolder.add(params, 'vignetteDarkness', 0, 1, 0.01).onChange(() => {
+    vignettePass.uniforms['darkness'].value = params.vignetteDarkness;
   });
   vignFolder.close();
 
-  gui.add(params, "changeBG");
+  gui.add(params, 'changeBG');
   gui.close();
 
   ///////////////////// Build scene, add objects
@@ -247,25 +198,17 @@ function init() {
   transParticles = new transitionParticles(scene);
   transParticles.hide();
 
-  const stage01 = new storyStage(scene, camera, window.CANVAS_ASSET_ROOT + "covidStory/data/stage01.json");
-  stageList.push(stage01);
-  const stage02 = new storyStage(scene, camera, window.CANVAS_ASSET_ROOT + "covidStory/data/stage02.json");
-  stageList.push(stage02);
-  const stage03 = new storyStage03(scene, camera, window.CANVAS_ASSET_ROOT + "covidStory/data/stage03.json");
-  stageList.push(stage03);
-  const stage04 = new storyStage(scene, camera, window.CANVAS_ASSET_ROOT + "covidStory/data/stage04.json");
-  stageList.push(stage04);
+  intro = new introStory(scene, canvas);
+  currentStory = intro;
+  storyList.push(currentStory);
+  const covidStory = new story(scene, canvas);
+  storyList.push(covidStory);
 
-  currentStage = stageList[currentStageNo];
-  let nxt = currentStageNo + 1;
-  if (nxt >= stageList.length) nxt = 0;
-  nextStage = stageList[currentStageNo + 1];
-
-  effectPass.uniforms["bluramount"].value = currentStage.blurAmount;
-  params.bluramount = currentStage.blurAmount;
-  effectPass.uniforms["center"].value = currentStage.blurCenter;
-  vignettePass.uniforms["offset"].value = params.vignetteOffset;
-  vignettePass.uniforms["darkness"].value = params.vignetteDarkness;
+  effectPass.uniforms['bluramount'].value = currentStory.currentStage.blurAmount;
+  params.bluramount = currentStory.currentStage.blurAmount;
+  effectPass.uniforms['center'].value = currentStory.currentStage.blurCenter;
+  vignettePass.uniforms['offset'].value = params.vignetteOffset;
+  vignettePass.uniforms['darkness'].value = params.vignetteDarkness;
 
   // console.log(renderer.info);
 }
@@ -273,48 +216,30 @@ function init() {
 //---------------- Animate --------------------------
 
 function animate(time) {
-  if (transition) transParticles.fly();
+  if (currentStory.transition) transParticles.fly();
   else transParticles.stop();
 
-  readyScenesCount = 0;
-  if (!allStagesReady) {
-    let proc = 0;
-    for (let i = 0; i < stageList.length; i++) {
-      proc += stageList[i].readyCheck();
-      // console.log(proc);
-      if (stageList[i].ready) {
-        readyScenesCount++;
-      }
-    }
-    proc = (proc * 100) / stageList.length;
-    if (!proc) proc = 0;
-    // loader.innerText = proc.toFixed() + "%";
-    events.fire(canvas, "canvas:scene-loading", {
-      percent: proc.toFixed(),
-    });
-    if (readyScenesCount >= stageList.length) {
-      events.fire(canvas, "canvas:scene-loaded", {
-        percent: proc.toFixed(),
-      });
-      allStagesReady = true;
-    }
-  }
+  if (currentStory.transition) effectPass.uniforms['bluramount'].value = 2.0;
+  else effectPass.uniforms['bluramount'].value = currentStory.currentStage.blurAmount;
 
-  // if (allStagesReady) loader.style.visibility = "hidden";
-
-  if (allStagesReady && !currentStage.visible) currentStage.show();
   if (!editMode) {
     camera.rotation.x += (camTargetRotX - camera.rotation.x) * 0.03;
     camera.rotation.y += (camTargetRotY - camera.rotation.y) * 0.03;
-    if (allStagesReady && !transition) currentStage.update(animationProgress);
   }
 
+  if (!editMode) currentStory.update();
+  if (intro.storyCopleted && !storyList[1].loading) {
+    currentStory = storyList[1];
+    currentStory.init();
+  }
+  if (intro.storyCopleted && storyList[1].loaded) intro.currentStage.hide();
+
   if (editMode) displaySceneCoords();
-  else msgDiv.innerHTML = "";
+  else msgDiv.innerHTML = '';
 
   requestAnimationFrame(animate);
   render();
-  // if (editMode) controls.update();
+
   stats.update();
   TWEEN.update(time);
 
@@ -331,97 +256,37 @@ function render() {
 
 function displaySceneCoords() {
   let position =
-    "( " +
-    currentStage.stageContainer.position.x.toFixed(2) +
-    ", " +
-    currentStage.stageContainer.position.y.toFixed(2) +
-    ", " +
-    currentStage.stageContainer.position.z.toFixed(2) +
-    ")";
+    '( ' +
+    currentStory.currentStage.stageContainer.position.x.toFixed(2) +
+    ', ' +
+    currentStory.currentStage.stageContainer.position.y.toFixed(2) +
+    ', ' +
+    currentStory.currentStage.stageContainer.position.z.toFixed(2) +
+    ')';
 
   let rotation =
-    "( " +
-    currentStage.stageContainer.rotation.x.toFixed(2) +
-    ", " +
-    currentStage.stageContainer.rotation.y.toFixed(2) +
-    ", " +
-    currentStage.stageContainer.rotation.z.toFixed(2) +
-    ")";
-  msgDiv.innerHTML = "Position: " + position + " | Rotation: " + rotation;
+    '( ' +
+    currentStory.currentStage.stageContainer.rotation.x.toFixed(2) +
+    ', ' +
+    currentStory.currentStage.stageContainer.rotation.y.toFixed(2) +
+    ', ' +
+    currentStory.currentStage.stageContainer.rotation.z.toFixed(2) +
+    ')';
+  msgDiv.innerHTML = 'Position: ' + position + ' | Rotation: ' + rotation;
 }
-
 // ----------------------------------------------------------------
-
-function switchScene() {
-  params.transTween = 0;
-  animationProgress = 0;
-  currentStage.hide();
-  currentStageNo++;
-  if (currentStageNo >= stageList.length) currentStageNo = 0;
-  nextStageNo++;
-  if (nextStageNo >= stageList.length) nextStageNo = 0;
-  currentStage = stageList[currentStageNo];
-  nextStage = stageList[nextStageNo];
-  console.log("current stage: " + currentStageNo + " next stage: " + nextStageNo);
-  nextStage.hide();
-  currentStage.reset();
-  currentStage.update(animationProgress);
-  currentStage.show();
-}
-
-// ----------------------------------------------------------------
-
-function sceneTransition() {
-  params.animTween = 0;
-  params.transTween = 0;
-
-  transition = true;
-
-  // let myTimeout = setTimeout(() => {
-  //   transition = false;
-  //   switchScene();
-  //   clearTimeout(myTimeout);
-  // }, 2000);
-
-  let transInTween = new TWEEN.Tween(params)
-    .to({ transTween: 1 }, 200)
-    .easing(TWEEN.Easing.Quadratic.Out)
-    .onComplete(() => {
-      transition = false;
-      TWEEN.remove(transInTween);
-    })
-    .onUpdate(() => {
-      currentStage.stageContainer.position.z = currentStage.startPosition.z - 1000 + params.transTween * 1000;
-    });
-
-  let transOutTween = new TWEEN.Tween(params)
-    .to({ transTween: 1 }, 500)
-    .easing(TWEEN.Easing.Quadratic.In)
-    .onComplete(() => {
-      switchScene();
-      currentStage.stageContainer.position.z = currentStage.startPosition.z - 1000;
-      transInTween.start();
-      TWEEN.remove(transOutTween);
-    })
-    .onUpdate(() => {
-      currentStage.stageContainer.position.z = currentStage.targetPosition.z + params.transTween * 1000;
-    })
-    .start();
-}
 
 function saveFrame(frm) {
   if (editMode && editFrame == 0) {
-    currentStage.startPosition.copy(currentStage.stageContainer.position);
-    currentStage.startRotation.copy(currentStage.stageContainer.rotation);
-    console.log(currentStage.startPosition);
-    alert("start frame saved!");
+    currentStory.currentStage.startPosition.copy(currentStory.currentStage.stageContainer.position);
+    currentStory.currentStage.startRotation.copy(currentStory.currentStage.stageContainer.rotation);
+    alert('start frame saved!');
   }
 
   if (editMode && editFrame == 1) {
-    currentStage.targetPosition.copy(currentStage.stageContainer.position);
-    currentStage.targetRotation.copy(currentStage.stageContainer.rotation);
-    console.log(currentStage.targetPosition);
-    alert("end frame saved!");
+    currentStory.currentStage.targetPosition.copy(currentStory.currentStage.stageContainer.position);
+    currentStory.currentStage.targetRotation.copy(currentStory.currentStage.stageContainer.rotation);
+    alert('end frame saved!');
   }
 }
 
@@ -435,13 +300,13 @@ function onDocumentMouseMove(event) {
   camTargetRotY = -mouse.x * params.camRot;
 
   if (editMode && rightButtonDown) {
-    currentStage.stageContainer.position.x += event.movementX / 100;
-    currentStage.stageContainer.position.y -= event.movementY / 100;
+    currentStory.currentStage.stageContainer.position.x += event.movementX / 100;
+    currentStory.currentStage.stageContainer.position.y -= event.movementY / 100;
   }
 
   if (editMode && leftButtonDown) {
-    currentStage.stageContainer.rotation.x += event.movementY / 100;
-    currentStage.stageContainer.rotation.y += event.movementX / 100;
+    currentStory.currentStage.stageContainer.rotation.x += event.movementY / 100;
+    currentStory.currentStage.stageContainer.rotation.y += event.movementX / 100;
   }
 
   // mouse.unproject(camera);
@@ -482,7 +347,7 @@ function onDocumentClick(event) {
 }
 
 function onDocumentWheel(event) {
-  currentStage.stageContainer.position.z += event.deltaY / 100;
+  currentStory.currentStage.stageContainer.position.z += event.deltaY / 100;
 }
 
 function onDocumentMouseDown(event) {
@@ -506,22 +371,23 @@ function onWindowResize() {
 
 function onDocumentKeyDown(e) {
   switch (e.key) {
-    case " ":
-      if (!editMode) startAnim();
+    case ' ':
+      if (!editMode) currentStory.startAnim();
       break;
-    case "ArrowUp":
-      frameDiv.innerHTML = "end frame";
+
+    case 'ArrowUp':
+      frameDiv.innerHTML = 'end frame';
       editFrame = 1;
-      if (editMode) currentStage.update(editFrame);
-      console.log(currentStage.targetPosition);
+      if (editMode) currentStory.currentStage.update(editFrame);
       break;
-    case "ArrowDown":
-      frameDiv.innerHTML = "start frame";
+
+    case 'ArrowDown':
+      frameDiv.innerHTML = 'start frame';
       editFrame = 0;
-      if (editMode) currentStage.update(editFrame);
-      console.log(currentStage.startPosition);
+      if (editMode) currentStory.currentStage.update(editFrame);
       break;
-    case "Enter":
+
+    case 'Enter':
       saveFrame(editFrame);
       break;
   }

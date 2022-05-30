@@ -1,6 +1,6 @@
 /* eslint-disable */
-import * as THREE from "https://cdn.skypack.dev/three@0.132.0/build/three.module.js";
-import { storyStage } from "../js/storyStage.js";
+import * as THREE from 'https://cdn.skypack.dev/three@0.132.0/build/three.module.js';
+import { storyStage } from '../js/storyStage.js';
 
 class storyStage03 extends storyStage {
   pathsContainer = new THREE.Object3D();

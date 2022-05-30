@@ -55,7 +55,7 @@ class ambientParticles {
     particlesParticlesGeo.setAttribute("position", new THREE.Float32BufferAttribute(this.vertices, 3));
 
     let mat = new THREE.PointsMaterial({
-      size: 1,
+      size: 0.5,
       sizeAttenuation: true,
       map: sprite,
       depthTest: false,

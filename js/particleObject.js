@@ -64,7 +64,7 @@ class particleObject {
     surfaceNoiseSpeed: 0.2,
   };
 
-  MAX_PARTICLES = 500000;
+  MAX_PARTICLES = 250000;
   MAX_SIZE = 6;
 
   constructor(parentContainer, model, col) {
@@ -150,7 +150,9 @@ class particleObject {
   }
 
   sampleSurface() {
+    // console.time(this.name);
     this.sampler = new MeshSurfaceSampler(this.surfaceMesh).setWeightAttribute('color').build();
+    // console.timeEnd(this.name);
     let _position = new THREE.Vector3();
     for (let i = 0; i < this.MAX_PARTICLES; i++) {
       this.sampler.sample(_position);
@@ -170,14 +172,9 @@ class particleObject {
       positions[index++] = this.surfaceVerts[i].y;
       positions[index++] = this.surfaceVerts[i].z;
     }
+
     this.particles.geometry.attributes.position.needsUpdate = true;
     this.resample(0);
-    // this.particles.geometry.dispose();
-    // this.particles.material.dispose();
-    // this.particles.removeFromParent();
-    // this.surfaceMesh.geometry.dispose();
-    // this.surfaceMesh.material.dispose();
-    // this.surfaceMesh.removeFromParent();
     this.ready = true;
     this.surfaceVerts.length = 0;
   }
@@ -195,16 +192,19 @@ class particleObject {
   //   this.changeParticleSize();
   // }
 
-  changeParticleSize() {
-    let viewportSurfaceArea = window.innerWidth * window.innerHeight * 0.000001;
+  changeParticleSize(s) {
+    this.particleParams.particleSize = s;
+    this.uniformsValues['size'].value = s;
+    this.uniformsValues.needsUpdate = true;
+    // let viewportSurfaceArea = window.innerWidth * window.innerHeight * 0.000001;
 
-    const sizes = this.geometry.attributes.size.array;
-    for (let i = 0; i < this.geometry.attributes.size.array.length; i++) {
-      sizes[i] =
-        this.particleParams.particleSize * this.particleParams.particleSizeMult * viewportSurfaceArea +
-        (Math.random() - 0.5) * 2 * this.particleParams.particleSizeVariation;
-    }
-    this.geometry.attributes.size.needsUpdate = true;
+    // const sizes = this.geometry.attributes.size.array;
+    // for (let i = 0; i < this.geometry.attributes.size.array.length; i++) {
+    //   sizes[i] =
+    //     this.particleParams.particleSize * this.particleParams.particleSizeMult * viewportSurfaceArea +
+    //     (Math.random() - 0.5) * 2 * this.particleParams.particleSizeVariation;
+    // }
+    // this.geometry.attributes.size.needsUpdate = true;
   }
 
   changeRimColor(col) {

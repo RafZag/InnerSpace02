@@ -1,0 +1,46 @@
+{
+  "name": "intro",
+  "blurAmount": 0.2,
+  "blurCenter": 1.0,
+  "duration": 2000,
+  "camera": {
+    "start": [0, 0, 60],
+    "end": [2, -3, 15]
+  },
+  "stageContainer": {
+    "startPosition": [-5.72, 16.33, 10],
+    "targetPosition": [3.35, 6.73, 27],
+    "startRotation": [0.33, -0.59, 0],
+    "targetRotation": [0, 0, 0],
+    "animStart": 0,
+    "animStop": 1
+  },
+  "sceneObjs": [
+    {
+      "name": "body",
+      "gltfFile": "intro/body.glb",
+      "color": 3,
+      "targetcolor": 3,
+      "parent": "stageContainer",
+      "particleCount": 100000,
+      "particleSize": 2,
+      "particlesWobble": 0.01,
+      "surfaceNoiseAmpl": 0,
+      "surfaceNoiseScale": 2.5,
+      "surfaceNoiseSpeed": 0,
+      "startPosition": [0, -60, 0],
+      "targetPosition": [0, -60, 0],
+      "startRotation": [0, 0, 0],
+      "targetRotation": [0, 0, 0],
+      "startScale": [2, 2, 2],
+      "targetScale": [2, 2, 2],
+      "objWobbleAmp": 0,
+      "objWobbleSpeed": 0,
+      "show": true,
+      "showRangeStrat": 0,
+      "showRangeEnd": 1,
+      "animStart": 0.5,
+      "animStop": 1
+    }
+  ]
+}

@@ -11,7 +11,7 @@ const particleVertexShader = /*glsl*/ `
   uniform float objWobbleAmp;
   uniform float objWobbleSpeed;
   uniform vec2 resolution;
-  attribute float size;
+  uniform float size;
   // varying vec3 vColor;
   varying float dist;
 
